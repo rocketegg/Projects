@@ -121,8 +121,14 @@ def repeated(f, n):
     625
     >>> repeated(square, 4)(5)
     152587890625
+    >>> repeated(next, 5)(5)
+    10
     """
     "*** YOUR CODE HERE ***"
+    k, r = 1, f
+    while (k < n):
+        r, k = compose1(f, r), next(k)
+    return r
 
 
 def compose1(f, g):
@@ -189,4 +195,5 @@ if __name__ == '__main__':
     #doctest.run_docstring_examples(factorial, globals(), True, __name__)
     #doctest.run_docstring_examples(summation_using_accumulate, globals(), True, __name__)
     #doctest.run_docstring_examples(product_using_accumulate, globals(), True, __name__)
-    doctest.run_docstring_examples(double, globals(), True, __name__)
+    #doctest.run_docstring_examples(double, globals(), True, __name__)
+    doctest.run_docstring_examples(repeated, globals(), True, __name__)
