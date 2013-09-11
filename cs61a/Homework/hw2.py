@@ -101,9 +101,13 @@ def double(f):
 
     >>> double(square)(2)
     16
+    >>> double(next)(3)
+    5
     """
     "*** YOUR CODE HERE ***"
-
+    def g(x):
+        return f(f(x))
+    return g
 
 # Q4.
 
@@ -184,4 +188,5 @@ if __name__ == '__main__':
     #doctest.run_docstring_examples(product, globals(), True, __name__)
     #doctest.run_docstring_examples(factorial, globals(), True, __name__)
     #doctest.run_docstring_examples(summation_using_accumulate, globals(), True, __name__)
-    doctest.run_docstring_examples(product_using_accumulate, globals(), True, __name__)
+    #doctest.run_docstring_examples(product_using_accumulate, globals(), True, __name__)
+    doctest.run_docstring_examples(double, globals(), True, __name__)
