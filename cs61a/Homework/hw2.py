@@ -1,6 +1,11 @@
 # Name:
 # Email:
 
+def next(x):
+    return x + 1
+
+def identity(x):
+    return x
 
 def square(x):
     """Return x squared."""
@@ -17,6 +22,10 @@ def product(n, term):
     576
     """
     "*** YOUR CODE HERE ***"
+    k, result = 1, 1
+    while (k <= n):
+        result, k = result * term(k), next(k)
+    return result
 
 
 def factorial(n):
@@ -24,31 +33,64 @@ def factorial(n):
 
     >>> factorial(4)
     24
+    >>> factorial(5)
+    120
+    >>> factorial(1)
+    1
+    >>> factorial(2)
+    2
+    >>> factorial(3)
+    6
     """
     "*** YOUR CODE HERE ***"
+    return product(n, identity)
 
 # Q2.
 
+from operator import add, mul
 def accumulate(combiner, start, n, term):
     """Return the result of combining the first n terms in a sequence."""
+    """ Combiner = a function
+        term = a function
+        start = base value to use to start the accumulation
+        n = n terms to accumulate
+    """
     "*** YOUR CODE HERE ***"
-
+    k, result = 1, start
+    while (k <= n):
+        result = combiner(result, term(k))
+        k = next(k)
+    return result
 
 def summation_using_accumulate(n, term):
     """An implementation of summation using accumulate.
 
     >>> summation_using_accumulate(4, square)
     30
+    >>> summation_using_accumulate(3, square)
+    14
+    >>> summation_using_accumulate(5, identity)
+    15
     """
     "*** YOUR CODE HERE ***"
+    return accumulate(add, 0, n, term)
 
 def product_using_accumulate(n, term):
     """An implementation of product using accumulate.
 
     >>> product_using_accumulate(4, square)
     576
+    >>> product_using_accumulate(3, square)
+    36
+    
+    #same as factorial
+
+    >>> product_using_accumulate(4, identity)
+    24
+
     """
     "*** YOUR CODE HERE ***"
+    return accumulate(mul, 1, n, term)
 
 # Q3.
 
@@ -135,3 +177,11 @@ def mul_church(m, n):
     """
     "*** YOUR CODE HERE ***"
 
+if __name__ == '__main__':
+    import doctest
+    #doctest.run_docstring_examples(a_plus_abs_b, globals(), True, __name__)
+    #doctest.run_docstring_examples(two_of_three, globals(), True, __name__)
+    #doctest.run_docstring_examples(product, globals(), True, __name__)
+    #doctest.run_docstring_examples(factorial, globals(), True, __name__)
+    #doctest.run_docstring_examples(summation_using_accumulate, globals(), True, __name__)
+    doctest.run_docstring_examples(product_using_accumulate, globals(), True, __name__)
