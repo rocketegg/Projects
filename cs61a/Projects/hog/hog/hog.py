@@ -22,6 +22,17 @@ def roll_dice(num_rolls, dice=six_sided):
     assert type(num_rolls) == int, 'num_rolls must be an integer.'
     assert num_rolls > 0, 'Must roll at least once.'
     "*** YOUR CODE HERE ***"
+    k, total = 0, 0
+    one = False
+    while (k < num_rolls): 
+        num = dice()
+        if (num == 1):
+            one = True
+        total, k = num + total, k+1
+    if (one):
+        return 1
+    else:
+        return total
 
 
 def take_turn(num_rolls, opponent_score, dice=six_sided):
@@ -36,6 +47,16 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
     assert num_rolls <= 10, 'Cannot roll more than 10 dice.'
     assert opponent_score < 100, 'The game should be over.'
     "*** YOUR CODE HERE ***"
+    if (num_rolls == 0):
+        return getMaxDigit(opponent_score) + 1
+    else:
+        return roll_dice(num_rolls, dice)
+
+def getMaxDigit(num):
+    digits = str(num)
+    l = list(digits)
+    high = int(max(l))
+    return high
 
 # Playing a game
 
@@ -51,6 +72,7 @@ def select_dice(score, opponent_score):
     True
     """
     "*** YOUR CODE HERE ***"
+
 
 def other(who):
     """Return the other player, for a player WHO numbered 0 or 1.
