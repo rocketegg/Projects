@@ -50,15 +50,19 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
     assert opponent_score < 100, 'The game should be over.'
     "*** YOUR CODE HERE ***"
     if (num_rolls == 0):
-        return getMaxDigit(opponent_score) + 1
+        return getBaconScore(opponent_score)
     else:
         return roll_dice(num_rolls, dice)
 
-def getMaxDigit(num):
-    digits = str(num)
-    l = list(digits)
-    high = int(max(l))
-    return high
+
+#returns the number of points for rolling 0
+def getBaconScore(opponent_score):
+    def getMaxDigit(num):
+        digits = str(num)
+        l = list(digits)
+        high = int(max(l))
+        return high
+    return getMaxDigit(opponent_score) + 1
 
 # Playing a game
 
@@ -88,6 +92,9 @@ def other(who):
     """
     return 1 - who
 
+PLAY1_WIN_COUNT = 0
+PLAY0_WIN_COUNT = 0
+
 def play(strategy0, strategy1, goal=GOAL_SCORE):
     """Simulate a game and return the final scores of both players, with
     Player 0's score first, and Player 1's score second.
@@ -109,11 +116,6 @@ def play(strategy0, strategy1, goal=GOAL_SCORE):
             return "six-sided"
         return "four-sided"
 
-    def isDouble(score1, score2):
-        if (score1 * 2 == score2 or score2 * 2 == score1):
-            return True
-        return False
-
     who = 0  # Which player is about to take a turn, 0 (first) or 1 (second)
     score, opponent_score = 0, 0
     numDice, selectDice = 0, 0
@@ -129,20 +131,35 @@ def play(strategy0, strategy1, goal=GOAL_SCORE):
             selectDice = select_dice(opponent_score, score)
             opponent_score += take_turn(numDice, score, selectDice)
         
-        print("Player {} is rolling {} {} dice.  New score: {}".format(who, 
-            numDice, whichDice(selectDice), getScore(who)))
+        #print("Player {} is rolling {} {} dice.  New score: {}".format(who, 
+         #   numDice, whichDice(selectDice), getScore(who)))
 
         #swine swap
-        if (isDouble(score, opponent_score)):
+        if (causes_swine_swap(score, opponent_score)):
             score, opponent_score = opponent_score, score
 
         #switch players
         who = other(who)
 
     who = other(who)
-    print("Player {} wins!  Final score {} to {}".format(who, score, opponent_score))
+    inc_win_count(who)
+    print("Player {} wins!  Final score {} to {}.  Win Count: {} to {}"
+        .format(who, score, opponent_score, PLAY0_WIN_COUNT, PLAY1_WIN_COUNT))
 
     return score, opponent_score  # You may wish to change this line.
+
+def inc_win_count(who):
+    if (who == 0):
+        global PLAY0_WIN_COUNT
+        PLAY0_WIN_COUNT += 1
+    else:
+        global PLAY1_WIN_COUNT
+        PLAY1_WIN_COUNT += 1
+
+def causes_swine_swap(score1, score2):
+    if (score1 * 2 == score2 or score2 * 2 == score1):
+        return True
+    return False
 
 #######################
 # Phase 2: Strategies #
@@ -237,10 +254,15 @@ def winner(strategy0, strategy1):
     else:
         return 1
 
+#this calculates the win percentage against the baseline strategy
+# first playing with the strategy as player 0
+# then playing with the strategy as player 1
 def average_win_rate(strategy, baseline=always_roll(BASELINE_NUM_ROLLS)):
     """Return the average win rate (0 to 1) of STRATEGY against BASELINE."""
     win_rate_as_player_0 = 1 - make_averaged(winner)(strategy, baseline)
     win_rate_as_player_1 = make_averaged(winner)(baseline, strategy)
+    print("win rate as player 0: {}".format(win_rate_as_player_0))
+    print("win rate as player 1: {}".format(win_rate_as_player_1))
     return (win_rate_as_player_0 + win_rate_as_player_1) / 2 # Average results
 
 def run_experiments():
@@ -252,12 +274,12 @@ def run_experiments():
         print('Max scoring num rolls for four-sided dice:', four_sided_max)
 
     if False: # Change to True to test always_roll(8)
-        print('always_roll(8) win rate:', average_win_rate(always_roll(8)))
+        print('always_roll(8) win rate:', average_win_rate(always_roll(6)))
 
     if False: # Change to False to test bacon_strategy
         print('bacon_strategy win rate:', average_win_rate(bacon_strategy))
 
-    if False: # Change to False to test swap_strategy
+    if True: # Change to False to test swap_strategy
         print('swap_strategy win rate:', average_win_rate(swap_strategy))
 
     if False: # Change to False to test final_strategy
@@ -271,6 +293,9 @@ def bacon_strategy(score, opponent_score):
     """This strategy rolls 0 dice if that gives at least BACON_MARGIN points,
     and rolls BASELINE_NUM_ROLLS otherwise.
 
+    BASELINE_NUM_ROLLS = 5
+    BACON_MARGIN = 8
+
     >>> bacon_strategy(0, 0)
     5
     >>> bacon_strategy(70, 50)
@@ -279,7 +304,10 @@ def bacon_strategy(score, opponent_score):
     0
     """
     "*** YOUR CODE HERE ***"
-    return 5 # Replace this statement
+    if (getBaconScore(opponent_score) >= BACON_MARGIN):
+        return 0
+    else:
+        return BASELINE_NUM_ROLLS
 
 def swap_strategy(score, opponent_score):
     """This strategy rolls 0 dice when it would result in a beneficial swap and
@@ -297,7 +325,22 @@ def swap_strategy(score, opponent_score):
     5
     """
     "*** YOUR CODE HERE ***"
-    return 5 # Replace this statement
+    def is_beneficial_swap(score, opponent_score):
+        if (opponent_score > score):
+            return True
+        else:
+            return False
+    score_with_zero = score + getBaconScore(opponent_score)
+
+    #If no swine swap, follow bacon_strategy
+    if (not causes_swine_swap(score_with_zero, opponent_score)):
+        return bacon_strategy(score, opponent_score)
+        
+    #Otherwise roll 0 on beneficial swap, roll BASELINE otherwise
+    elif (is_beneficial_swap(score_with_zero, opponent_score)):
+        return 0
+    else:
+        return BASELINE_NUM_ROLLS
 
 def final_strategy(score, opponent_score):
     """Write a brief description of your final strategy.
