@@ -41,6 +41,8 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
     num_rolls:       The number of dice rolls that will be made.
     opponent_score:  The total score of the opponent.
     dice:            A function of no args that returns an integer outcome.
+
+    #returns the number of points 
     """
     assert type(num_rolls) == int, 'num_rolls must be an integer.'
     assert num_rolls >= 0, 'Cannot roll a negative number of dice.'
@@ -72,7 +74,9 @@ def select_dice(score, opponent_score):
     True
     """
     "*** YOUR CODE HERE ***"
-
+    if (score + opponent_score) % 7 == 0:
+        return four_sided
+    return six_sided
 
 def other(who):
     """Return the other player, for a player WHO numbered 0 or 1.
@@ -95,9 +99,49 @@ def play(strategy0, strategy1, goal=GOAL_SCORE):
     strategy0:  The strategy function for Player 0, who plays first.
     strategy1:  The strategy function for Player 1, who plays second.
     """
+    def getScore(who):
+        if who == 0:
+            return score
+        return opponent_score
+
+    def whichDice(dice):
+        if dice == six_sided:
+            return "six-sided"
+        return "four-sided"
+
+    def isDouble(score1, score2):
+        if (score1 * 2 == score2 or score2 * 2 == score1):
+            return True
+        return False
+
     who = 0  # Which player is about to take a turn, 0 (first) or 1 (second)
     score, opponent_score = 0, 0
+    numDice, selectDice = 0, 0
     "*** YOUR CODE HERE ***"
+    while (score < goal and opponent_score < goal):
+        #take turn
+        if who == 0:
+            numDice = strategy0(score, opponent_score)
+            selectDice = select_dice(score, opponent_score)
+            score += take_turn(numDice, opponent_score, selectDice)
+        else:
+            numDice = strategy1(opponent_score, score)
+            selectDice = select_dice(opponent_score, score)
+            opponent_score += take_turn(numDice, score, selectDice)
+        
+        print("Player {} is rolling {} {} dice.  New score: {}".format(who, 
+            numDice, whichDice(selectDice), getScore(who)))
+
+        #swine swap
+        if (isDouble(score, opponent_score)):
+            score, opponent_score = opponent_score, score
+
+        #switch players
+        who = other(who)
+
+    who = other(who)
+    print("Player {} wins!  Final score {} to {}".format(who, score, opponent_score))
+
     return score, opponent_score  # You may wish to change this line.
 
 #######################
