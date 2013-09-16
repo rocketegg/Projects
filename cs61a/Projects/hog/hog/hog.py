@@ -368,42 +368,12 @@ def final_strategy(score, opponent_score):
     """
 
     "*** YOUR CODE HERE ***"
-    #Four buckets of potential moves
-
-    #if behind:
-    # (score < opponent_score):
-
-
-
-
     return get_statistical_max(score,opponent_score) # Replace this statement
 
 ### EXPECTED VALUES
+from operator import sub, add
 def get_expected_value(opponent_score, dice=six_sided):
-    """ Based on 100k rolls
-    1 dice scores 3.50332 on average
-    2 dice scores 5.86032 on average
-    3 dice scores 7.36786 on average
-    4 dice scores 8.25786 on average
-    5 dice scores 8.59203 on average
-    6 dice scores 8.74338 on average
-    7 dice scores 8.50806 on average
-    8 dice scores 8.17981 on average
-    9 dice scores 7.78308 on average
-    10 dice scores 7.33582 on average
-    Max scoring num rolls for six-sided dice: 6
-    1 dice scores 2.50498 on average
-    2 dice scores 3.80794 on average
-    3 dice scores 4.37158 on average
-    4 dice scores 4.49637 on average
-    5 dice scores 4.3196 on average
-    6 dice scores 4.02963 on average
-    7 dice scores 3.67541 on average
-    8 dice scores 3.33545 on average
-    9 dice scores 2.9528 on average
-    10 dice scores 2.64403 on average
-    Max scoring num rolls for four-sided dice: 4
-    """
+    """ based on 100k rolls """
     six_list = [getBaconScore(opponent_score),
                 3.50332,
                 5.86032,
@@ -429,7 +399,8 @@ def get_expected_value(opponent_score, dice=six_sided):
 
     if (dice == six_sided):
         return six_list
-    return four_list
+    else: 
+        return four_list
 
 
 def get_statistical_max(score, opponent_score):
@@ -443,42 +414,32 @@ def get_statistical_max(score, opponent_score):
         c)  Otherwise just keep the best roll as is
     """
 
-    """k, avg, high, num_die = 1, 0, 0, 0
-    while (k <= 10):
-        avg = make_averaged(roll_dice, 1000)(k, select_dice(score, opponent_score)) 
-        print("{} dice scores {} on average".format(k, avg))
-        if (high < avg):
-            high = avg
-            num_die = k
-        k = k + 1
-    return num_die"""
-
     def adjust_expected_values_based_on_scores(score, opponent_score, eplist):
         """
         eplist is list of expected values
         """
-        score_with_zero = score + getBaconScore(opponent_score)
+        score_with_zero = getBaconScore(opponent_score)
+        possible = score + score_with_zero
 
-        #if 0 causes swine swap, put it in the list and return
-        if (causes_swine_swap(score_with_zero, opponent_score)):
-            diff = opponent_score - score_with_zero
-            eplist[0] = diff
-            #print("score with zero, opponent score: {} / {} SS: {}".format(
-             #   score_with_zero, opponent_score, eplist[0]))
+        #if 0 causes swine swap, calculate benefit and put in eplist
+        if (causes_swine_swap(possible, opponent_score)):
+            diff = opponent_score - possible
+            eplist[0] = max(eplist[0], diff) #of diff is positive, then it's beneficial
+            
+        #if 0 could cause opponent to have to roll a four_sided dice, add x to 0
+        if ((possible + opponent_score) % 7 == 0):
+            diff = score_with_zero + 4
+            eplist[0] = max(eplist[0], diff)
 
         return eplist
 
-    mydice = select_dice(score, opponent_score)
-    eplist = get_expected_value(opponent_score, mydice)
+    eplist = get_expected_value(opponent_score, select_dice(score, opponent_score))
 
-    adjusted = adjust_expected_values_based_on_scores(score, 
-        opponent_score, eplist)
+    adjusted = adjust_expected_values_based_on_scores(score, opponent_score, eplist)
 
     num_dice = adjusted.index(max(adjusted))
-
+    
     return num_dice
-
-
 
 def is_score_swap_within_realm_of_possibility(score, opponent_score):
     """ Returns true if a score_swap is within a certain threshold (e.g. 40 - 60%)
