@@ -282,7 +282,7 @@ def run_experiments():
     if False: # Change to False to test bacon_strategy
         print('bacon_strategy win rate:', average_win_rate(bacon_strategy))
 
-    if True: # Change to False to test swap_strategy
+    if False: # Change to False to test swap_strategy
         print('swap_strategy win rate:', average_win_rate(swap_strategy))
 
     if True: # Change to False to test final_strategy
@@ -413,24 +413,55 @@ def get_statistical_max(score, opponent_score):
         b)  If it causes a harmfuls core swap, avoid it
         c)  Otherwise just keep the best roll as is
     """
+    percent_one = .8333 #change of rolling a "1" with rolling 10 dice
 
     def adjust_expected_values_based_on_scores(score, opponent_score, eplist):
         """
         eplist is list of expected values
         """
-        score_with_zero = getBaconScore(opponent_score)
-        possible = score + score_with_zero
-
-        #if 0 causes swine swap, calculate benefit and put in eplist
-        if (causes_swine_swap(possible, opponent_score)):
-            diff = opponent_score - possible
-            eplist[0] = max(eplist[0], diff) #of diff is positive, then it's beneficial
+        #adjust based on swine swap 
+        def adjust_swine_swap(score, opponent_score, eplist):
+            score_with_zero = score + getBaconScore(opponent_score)
+            score_with_one = score + 1  #chances of rolling a 1 with 10 dice is 83%
             
-        #if 0 could cause opponent to have to roll a four_sided dice, add x to 0
-        if ((possible + opponent_score) % 7 == 0):
-            diff = score_with_zero + 4
-            eplist[0] = max(eplist[0], diff)
+            #if 0 causes swine swap, calculate benefit and put in eplist
+            def is_beneficial(old_diff, expected):
+                return (expected > old_diff)
 
+            if (causes_swine_swap(score_with_zero, opponent_score)):
+                #if is_beneficial(eplist[0], opponent_score - score_with_zero):
+                #    eplist[0] = opponent_score - score_with_zero
+                    #print(eplist)
+                eplist[0] = max(eplist[0], opponent_score - score_with_zero) 
+                #print(eplist)
+
+            if (causes_swine_swap(score_with_one, opponent_score)):
+                #if is_beneficial(eplist[10], opponent_score - score_with_one):
+                #    eplist[10] = opponent_score - score_with_one
+                    #print(eplist)
+                eplist[10] = max(eplist[10], 
+                    (opponent_score - score_with_one) * percent_one)
+                #print(eplist)
+            return eplist
+            
+        #adjust based on trying to force a four dice
+        def adjust_try_four(score, opponent_score, eplist):
+            score_with_zero = score + getBaconScore(opponent_score)
+            score_with_one = score + 1
+
+            #if 0 could cause opponent to have to roll a four_sided dice, add x to 0
+            if ((score_with_zero + opponent_score) % 7 == 0):
+                diff = score_with_zero + 4
+                eplist[0] = max(eplist[0], diff)
+
+            if ((score_with_one + opponent_score) % 7 == 0):
+                diff = score_with_zero + 4
+                eplist[10] = max(eplist[10], diff * percent_one)
+
+            return eplist
+
+        eplist = adjust_swine_swap(score, opponent_score, eplist)
+        eplist = adjust_try_four(score, opponent_score, eplist)
         return eplist
 
     eplist = get_expected_value(opponent_score, select_dice(score, opponent_score))
