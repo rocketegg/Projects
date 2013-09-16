@@ -143,8 +143,8 @@ def play(strategy0, strategy1, goal=GOAL_SCORE):
 
     who = other(who)
     inc_win_count(who)
-    print("Player {} wins!  Final score {} to {}.  Win Count: {} to {}"
-        .format(who, score, opponent_score, PLAY0_WIN_COUNT, PLAY1_WIN_COUNT))
+    #print("Player {} wins!  Final score {} to {}.  Win Count: {} to {}"
+    #    .format(who, score, opponent_score, PLAY0_WIN_COUNT, PLAY1_WIN_COUNT))
 
     return score, opponent_score  # You may wish to change this line.
 
@@ -189,7 +189,7 @@ def always_roll(n):
 
 # Experiments
 
-def make_averaged(fn, num_samples=1000):
+def make_averaged(fn, num_samples=4000):
     """Return a function that returns the average_value of FN when called.
 
     To implement this function, you will have to use *args syntax, a new Python
@@ -237,12 +237,15 @@ def max_scoring_num_rolls(dice=six_sided):
     10
     """
     "*** YOUR CODE HERE ***"
-    k, avg, high = 1, 0, 0
+    k, avg, high, num_die = 1, 0, 0, 0
     while (k <= 10):
-        avg  = make_averaged(roll_dice, 10000)(k, dice) 
+        avg  = make_averaged(roll_dice, 100000)(k, dice) 
         print("{} dice scores {} on average".format(k, avg))
-        high, k = max(k, high), k + 1
-    return high
+        if (high < avg):
+            high = avg
+            num_die = k
+        k = k + 1
+    return num_die
 
 
 
@@ -267,7 +270,7 @@ def average_win_rate(strategy, baseline=always_roll(BASELINE_NUM_ROLLS)):
 
 def run_experiments():
     """Run a series of strategy experiments and report results."""
-    if True: # Change to False when done finding max_scoring_num_rolls
+    if False: # Change to False when done finding max_scoring_num_rolls
         six_sided_max = max_scoring_num_rolls(six_sided)
         print('Max scoring num rolls for six-sided dice:', six_sided_max)
         four_sided_max = max_scoring_num_rolls(four_sided)
@@ -282,7 +285,7 @@ def run_experiments():
     if True: # Change to False to test swap_strategy
         print('swap_strategy win rate:', average_win_rate(swap_strategy))
 
-    if False: # Change to False to test final_strategy
+    if True: # Change to False to test final_strategy
         print('final_strategy win rate:', average_win_rate(final_strategy))
 
     "*** You may add additional experiments as you wish ***"
@@ -335,20 +338,165 @@ def swap_strategy(score, opponent_score):
     #If no swine swap, follow bacon_strategy
     if (not causes_swine_swap(score_with_zero, opponent_score)):
         return bacon_strategy(score, opponent_score)
-        
+
     #Otherwise roll 0 on beneficial swap, roll BASELINE otherwise
     elif (is_beneficial_swap(score_with_zero, opponent_score)):
         return 0
     else:
         return BASELINE_NUM_ROLLS
 
+#### ADVANCED STRATEGY
+
 def final_strategy(score, opponent_score):
     """Write a brief description of your final strategy.
 
     *** YOUR DESCRIPTION HERE ***
+    There are four buckets of potential moves:
+        1) If behind and your score and opponent score < 50
+            - you're not too far behind, go for the statistical max
+        2) If behind and opponent score > 50 
+            - if a score swap is within realm of possibility (i.e. > threshold),
+            attempt the score swap
+            - if not, then keep going for statistical max
+                (alternatively, could try to wait it out and keep going for score swap)
+        3) If ahead and your score and opponent score < 50
+            - you're not too far ahead, go for the statistical max
+        4) If ahead and your score > 50
+            - keep charging ahead, go for statistical max
+                (alternatively, could try to minimize chance of score_swap)
+
     """
+
     "*** YOUR CODE HERE ***"
-    return 5 # Replace this statement
+    #Four buckets of potential moves
+
+    #if behind:
+    # (score < opponent_score):
+
+
+
+
+    return get_statistical_max(score,opponent_score) # Replace this statement
+
+### EXPECTED VALUES
+def get_expected_value(opponent_score, dice=six_sided):
+    """ Based on 100k rolls
+    1 dice scores 3.50332 on average
+    2 dice scores 5.86032 on average
+    3 dice scores 7.36786 on average
+    4 dice scores 8.25786 on average
+    5 dice scores 8.59203 on average
+    6 dice scores 8.74338 on average
+    7 dice scores 8.50806 on average
+    8 dice scores 8.17981 on average
+    9 dice scores 7.78308 on average
+    10 dice scores 7.33582 on average
+    Max scoring num rolls for six-sided dice: 6
+    1 dice scores 2.50498 on average
+    2 dice scores 3.80794 on average
+    3 dice scores 4.37158 on average
+    4 dice scores 4.49637 on average
+    5 dice scores 4.3196 on average
+    6 dice scores 4.02963 on average
+    7 dice scores 3.67541 on average
+    8 dice scores 3.33545 on average
+    9 dice scores 2.9528 on average
+    10 dice scores 2.64403 on average
+    Max scoring num rolls for four-sided dice: 4
+    """
+    six_list = [getBaconScore(opponent_score),
+                3.50332,
+                5.86032,
+                7.36786, 
+                8.25786,
+                8.59203,
+                8.74338,
+                8.50806,
+                8.17981,
+                7.78308, 
+                7.33582]
+    four_list = [getBaconScore(opponent_score),
+                2.50498,
+                3.80794,
+                4.37158,
+                4.49637,
+                4.3196,
+                4.02963,
+                3.67541,
+                3.33545,
+                2.9528,
+                2.64403]
+
+    if (dice == six_sided):
+        return six_list
+    return four_list
+
+
+def get_statistical_max(score, opponent_score):
+    """ This function returns the statistical max score based on a few factors:
+    1)  Calculates what expected value of a dice roll would be based on 
+        the hypothetical roll (with a six-sided die or a four-sided die)
+        a)  Compares this with rolling a zero-argument
+    2)  Adjusts the statistical max based on whether it would cause a score_swap
+        a)  If it does cause a score swap (beneficial), then attempt it
+        b)  If it causes a harmfuls core swap, avoid it
+        c)  Otherwise just keep the best roll as is
+    """
+
+    """k, avg, high, num_die = 1, 0, 0, 0
+    while (k <= 10):
+        avg = make_averaged(roll_dice, 1000)(k, select_dice(score, opponent_score)) 
+        print("{} dice scores {} on average".format(k, avg))
+        if (high < avg):
+            high = avg
+            num_die = k
+        k = k + 1
+    return num_die"""
+
+    def adjust_expected_values_based_on_scores(score, opponent_score, eplist):
+        """
+        eplist is list of expected values
+        """
+        score_with_zero = score + getBaconScore(opponent_score)
+
+        #if 0 causes swine swap, put it in the list and return
+        if (causes_swine_swap(score_with_zero, opponent_score)):
+            diff = opponent_score - score_with_zero
+            eplist[0] = diff
+            #print("score with zero, opponent score: {} / {} SS: {}".format(
+             #   score_with_zero, opponent_score, eplist[0]))
+
+        return eplist
+
+    mydice = select_dice(score, opponent_score)
+    eplist = get_expected_value(opponent_score, mydice)
+
+    adjusted = adjust_expected_values_based_on_scores(score, 
+        opponent_score, eplist)
+
+    num_dice = adjusted.index(max(adjusted))
+
+    return num_dice
+
+
+
+def is_score_swap_within_realm_of_possibility(score, opponent_score):
+    """ Returns true if a score_swap is within a certain threshold (e.g. 40 - 60%)
+    """
+
+def attempt_score_swap(score, opponent_score):
+    """ This function returns the dice roll that will attempt to get a score swap
+    1)  It is meant to be used when the chips are down (e.g. opponent score is over 50)
+        and your score is within a certain threshold (e.g. 40 to 60% of opponent score)
+    2)  Will calculate what you need to trigger a score swap 
+        a)  Will consider how many dice to roll to maximize this chance (e.g. if zero
+            dice will work, then you can just return swap_strategy)
+        b)  Otherwise, attempt to find the number of dice to roll to maximize chance
+    """
+
+def attempt_to_roll_x(x, dice=six_sided):
+    """ This function attempts to roll x, based on a certain number of dice and
+        rolling from 1 - 10 dice max. """
 
 
 ##########################
