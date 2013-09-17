@@ -189,7 +189,7 @@ def always_roll(n):
 
 # Experiments
 
-def make_averaged(fn, num_samples=5000):
+def make_averaged(fn, num_samples=50000):
     """Return a function that returns the average_value of FN when called.
 
     To implement this function, you will have to use *args syntax, a new Python
@@ -364,7 +364,9 @@ def final_strategy(score, opponent_score):
             adjusts the list if you can force the opponent to roll a 
             four-sided dice (based on expected value)
     3)  take_guaranteed_victory - 
-            adjusts based on guaranteed victory by rolling a zero
+            adjusts based on (almost) guaranteed victory by rolling a zero
+            follows this strategy if 2x rolling zero would bring you to victory
+            empirically gave better results
     """
 
     "*** YOUR CODE HERE ***"
@@ -416,9 +418,11 @@ def get_statistical_max(score, opponent_score):
 
             return eplist
 
-        #adjust based on guaranteed victory
+        #adjust based on almost guaranteed victory
         def take_guaranteed_victory(score, opponent_score, eplist):
-            score_with_zero = score + getBaconScore(opponent_score)
+            score_with_zero = score + (getBaconScore(opponent_score) * 2)
+            #try more conservative approach
+
             if (score_with_zero >= GOAL_SCORE): #guaranteed victory by rolling a 0
                 if (not causes_swine_swap(score_with_zero, opponent_score)):
                     eplist[0] = 100 #set to arbitrary high # so always rolls this
@@ -449,7 +453,7 @@ def get_statistical_max(score, opponent_score):
 ### EXPECTED VALUES
 def get_expected_value(opponent_score, dice=six_sided):
     """ based on 100k rolls """
-    six_list = [getBaconScore(opponent_score),3.50332,5.86032,7.36786, 8.25786,8.59203,8.74338,8.50806,8.17981,7.78308, 7.33582]
+    six_list = [getBaconScore(opponent_score),3.50332,5.86032,7.36786, 8.25786,8.6356,8.70265,8.50806,8.17981,7.78308, 7.33582]
     four_list = [getBaconScore(opponent_score),2.50498,3.80794,4.37158,4.49637,4.3196,4.02963,3.67541,3.33545,2.9528,2.64403]
 
     if (dice == six_sided):
@@ -603,6 +607,7 @@ def convert_possibilities_to_matrix(possibilities, max_possibilities):
     print(json.dumps(possibility_matrix, indent=4))
 
 """ - BASICALLY, rolling anything but 1 is really hard to do
+Note: based on these, you can calculate the EXACT expected values of rolling the dice
 
 ****    SIX SIDED DICE  ****
 

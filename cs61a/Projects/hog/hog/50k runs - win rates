@@ -29,3 +29,10 @@ final_strategy win rate: 0.5991299999999999
 win rate as player 0: 0.5989599999999999
 win rate as player 1: 0.5961
 final_strategy win rate: 0.5975299999999999
+
+hog.py - after tweaking take_guaranteed_victory
+===========================================================
+final_strategy win rate: 0.6061700000000001
+
+final_strategy win rate: 0.60597
+
