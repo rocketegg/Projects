@@ -372,12 +372,55 @@ def final_strategy(score, opponent_score):
     """
 
     "*** YOUR CODE HERE ***"
-    #def am_behind(score, opponent_score):
-    #    return opponent_score > score
+    def am_behind(score, opponent_score):
+        return opponent_score > score
 
-    #if (am_behind(score, opponent_score)):
+    def by_a_lot(score, opponent_score, threshold):
+        return opponent_score - score > threshold
 
-    return get_statistical_max(score,opponent_score) # Replace this statement
+    def close_enough_to_swap(score, opponent_score, threshold):
+        if (abs(score - opponent_score)/score > threshold or
+            abs(score - opponent_score)/opponent_score > threshold):
+            return True
+        else:
+            return False
+
+    def be_risky(score, opponent_score, dice):
+        if close_enough_to_swap(score, opponent_score, .9):
+            #what do i need
+            ineed = score * 2 - opponent_score
+            if dice == six_sided:
+                if ineed == 1:
+                    return 10
+                if ineed >= 2 and ineed <= 6:
+                    return 1
+                else:
+                    return be_safe(score, opponent_score)
+            else:
+                if ineed == 1:
+                    return 10
+                elif ineed >= 2 and ineed <= 4:
+                    return 10  #25% chance, everything else too risky
+                else:
+                    return be_safe(score, opponent_score)
+        else:
+            return be_safe(score, opponent_score)
+
+    def be_safe(score, opponent_score):
+        return get_statistical_max(score,opponent_score)
+
+    dice = select_dice(score, opponent_score)
+
+    if am_behind(score, opponent_score):
+        if by_a_lot(score, opponent_score, 30):
+            return be_risky(score, opponent_score, dice)
+        else:
+            return be_safe(score, opponent_score)
+    else:   #i'm ahead
+        if by_a_lot(opponent_score, score, 30):
+            return be_safe(score, opponent_score)
+        else:
+            return be_safe(score, opponent_score)
 
 ### EXPECTED VALUES
 def get_expected_value(opponent_score, dice=six_sided):
@@ -400,7 +443,6 @@ def get_statistical_max(score, opponent_score):
         b)  If it causes a harmfuls core swap, avoid it
         c)  Otherwise just keep the best roll as is
     """
-    percent_one = .8333 #chance of rolling a "1" with rolling 10 dice
 
     def adjust_expected_values_based_on_scores(score, opponent_score, eplist):
         """
@@ -427,7 +469,7 @@ def get_statistical_max(score, opponent_score):
             score_with_zero = score + getBaconScore(opponent_score)
             score_with_one = score + 1
 
-            #if 0 could cause opponent to have to roll a four_sided dice, add x to 0
+            #if we can cause opponent to have to roll a four_sided dice, calc the benefit
             if ((score_with_zero + opponent_score) % 7 == 0):
                 eplist[0] = max(eplist[0], eplist[0] + 4)
 
@@ -440,9 +482,17 @@ def get_statistical_max(score, opponent_score):
         eplist = adjust_try_four(score, opponent_score, eplist)
         return eplist
 
-    eplist = get_expected_value(opponent_score, select_dice(score, opponent_score))
+    dice = select_dice(score, opponent_score)
 
-    adjusted = adjust_expected_values_based_on_scores(score, opponent_score, eplist)
+    if (dice == six_sided):
+        percent_one = .833 #chance of rolling a "1" with rolling 10 six-sided dice
+    else:
+        percent_one = .944 #chance of rolling a "1" when rolling 10 four-sided dice
+
+    eplist = get_expected_value(opponent_score, dice)
+
+    adjusted = adjust_expected_values_based_on_scores(
+        score, opponent_score, eplist)
 
     num_dice = adjusted.index(max(adjusted))
     
