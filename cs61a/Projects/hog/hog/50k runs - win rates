@@ -1,0 +1,31 @@
+===========================================================
+50k runs
+hog.py - after implementing be_risky and be_safe strategies
+===========================================================
+win rate as player 0: 0.58636
+win rate as player 1: 0.58832
+final_strategy win rate: 0.58734
+
+win rate as player 0: 0.58994
+win rate as player 1: 0.58466
+final_strategy win rate: 0.5872999999999999
+
+hog.py - after implementing additional expected value for 2 - 6 for swine swap
+===========================================================
+win rate as player 0: 0.5881000000000001
+win rate as player 1: 0.5867
+final_strategy win rate: 0.5874
+
+win rate as player 0: 0.5957600000000001
+win rate as player 1: 0.59394
+final_strategy win rate: 0.5948500000000001
+
+hog.py - after implementing take_guaranteed_victory
+===========================================================
+win rate as player 0: 0.60024
+win rate as player 1: 0.59802
+final_strategy win rate: 0.5991299999999999
+
+win rate as player 0: 0.5989599999999999
+win rate as player 1: 0.5961
+final_strategy win rate: 0.5975299999999999

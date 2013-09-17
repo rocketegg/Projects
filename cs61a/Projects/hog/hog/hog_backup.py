@@ -189,7 +189,7 @@ def always_roll(n):
 
 # Experiments
 
-def make_averaged(fn, num_samples=5000):
+def make_averaged(fn, num_samples=50000):
     """Return a function that returns the average_value of FN when called.
 
     To implement this function, you will have to use *args syntax, a new Python
@@ -264,8 +264,8 @@ def average_win_rate(strategy, baseline=always_roll(BASELINE_NUM_ROLLS)):
     """Return the average win rate (0 to 1) of STRATEGY against BASELINE."""
     win_rate_as_player_0 = 1 - make_averaged(winner)(strategy, baseline)
     win_rate_as_player_1 = make_averaged(winner)(baseline, strategy)
-    #print("win rate as player 0: {}".format(win_rate_as_player_0))
-    #print("win rate as player 1: {}".format(win_rate_as_player_1))
+    print("win rate as player 0: {}".format(win_rate_as_player_0))
+    print("win rate as player 1: {}".format(win_rate_as_player_1))
     return (win_rate_as_player_0 + win_rate_as_player_1) / 2 # Average results
 
 def run_experiments():
@@ -355,50 +355,135 @@ def final_strategy(score, opponent_score):
     """Write a brief description of your final strategy.
 
     *** YOUR DESCRIPTION HERE ***
-    Strategy figures out the statistical max score 
-    (picking the max based on number of dice to roll):
-    1)  adjust_swine_swap - 
-            adjusts the list of expected scores based on if you can 
-            cause a beneficial swine-swap (based on expected value)
-    2)  adjust_try_four - 
-            adjusts the list if you can force the opponent to roll a 
-            four-sided dice (based on expected value)
-    3)  take_guaranteed_victory - 
-            adjusts based on guaranteed victory by rolling a zero
+    There are four buckets of potential moves:
+        1) If behind and your score and opponent score < 50
+            - you're not too far behind, go for the statistical max
+        2) If behind and opponent score > 50 
+            - if a score swap is within realm of possibility (i.e. > threshold),
+            attempt the score swap
+            - if not, then keep going for statistical max
+                (alternatively, could try to wait it out and keep going for score swap)
+        3) If ahead and your score and opponent score < 50
+            - you're not too far ahead, go for the statistical max
+        4) If ahead and your score > 50
+            - keep charging ahead, go for statistical max
+                (alternatively, could try to minimize chance of score_swap)
+
     """
 
     "*** YOUR CODE HERE ***"
-    return get_statistical_max(score, opponent_score)
+    def am_behind(score, opponent_score):
+        return opponent_score > score
+
+    def by_a_lot(score, opponent_score, threshold):
+        return opponent_score - score > threshold
+
+    def close_enough_to_swap(score, opponent_score, threshold):
+        if (abs(score - opponent_score)/score > threshold or
+            abs(score - opponent_score)/opponent_score > threshold):
+            return True
+        else:
+            return False
+
+    def be_risky(score, opponent_score, dice):
+        if close_enough_to_swap(score, opponent_score, .9):
+            #what do i need
+            ineed = score * 2 - opponent_score
+            if dice == six_sided:
+                if ineed == 1:
+                    return 10
+                if ineed >= 2 and ineed <= 6:
+                    return 1
+                else:
+                    return be_safe(score, opponent_score)
+            else:
+                if ineed == 1:
+                    return 10
+                elif ineed >= 2 and ineed <= 4:
+                    return 10  #25% chance, everything else too risky
+                else:
+                    return be_safe(score, opponent_score)
+        else:
+            return be_safe(score, opponent_score)
+
+    def be_safe(score, opponent_score):
+        return get_statistical_max(score,opponent_score)
+
+    dice = select_dice(score, opponent_score)
+
+    """if am_behind(score, opponent_score):
+        if by_a_lot(score, opponent_score, 30):
+            return be_risky(score, opponent_score, dice)
+        else:
+            return be_safe(score, opponent_score)
+    else:   #i'm ahead
+        if by_a_lot(opponent_score, score, 30):
+            return be_safe(score, opponent_score)
+        else:
+            return be_safe(score, opponent_score)
+    """
+    return be_safe(score, opponent_score)
+
+### EXPECTED VALUES
+def get_expected_value(opponent_score, dice=six_sided):
+    """ based on 100k rolls """
+    six_list = [getBaconScore(opponent_score),3.50332,5.86032,7.36786, 8.25786,8.59203,8.74338,8.50806,8.17981,7.78308, 7.33582]
+    four_list = [getBaconScore(opponent_score),2.50498,3.80794,4.37158,4.49637,4.3196,4.02963,3.67541,3.33545,2.9528,2.64403]
+
+    if (dice == six_sided):
+        return six_list
+    else: 
+        return four_list
 
 def get_statistical_max(score, opponent_score):
-    """ Returns statistical max based on expected value of rolling a six or four-sided
-    dice, then adjusting the stats based on swine_swap, forcing a four, and Taking
-    the guaranteed victory
+    """ This function returns the statistical max score based on a few factors:
+    1)  Calculates what expected value of a dice roll would be based on 
+        the hypothetical roll (with a six-sided die or a four-sided die)
+        a)  Compares this with rolling a zero-argument
+    2)  Adjusts the statistical max based on whether it would cause a score_swap
+        a)  If it does cause a score swap (beneficial), then attempt it
+        b)  If it causes a harmfuls core swap, avoid it
+        c)  Otherwise just keep the best roll as is
     """
 
     def adjust_expected_values_based_on_scores(score, opponent_score, eplist):
-        
+        """
+        eplist is list of expected values
+        """
         #adjust based on swine swap 
         def adjust_swine_swap(score, opponent_score, eplist):
             if (score > opponent_score or opponent_score % 2 == 1):    #never want to swine swap if our score is bigger
                 return eplist   
 
             ineed = (opponent_score / 2) - score #what i need to trigger swine swap
-            if (ineed <= 0): #if i would need a neg, not possible
+            
+            
+            if (ineed <= 0): #if i would need a neg, not psosible
                 return eplist
 
             ineed = int(ineed)
+            #print ("score/opp score {}/{} i need is: {} ".format(score, opponent_score, ineed))
+
             difference = opponent_score - (score + ineed) #the benefit
 
-            if ineed == getBaconScore(opponent_score):  #roll zero, a sure thing
+            #if a zero roll works, it's a sure thing
+            if ineed == getBaconScore(opponent_score):
                 eplist[0] = max(eplist[0], difference) 
-
-            if ineed == 1:  #roll 1
+                #print("i need a {} (zero roll) to trigger swine swap with benefit: {}  EXP: {}"
+                #    .format(getBaconScore(opponent_score), 
+                #        opponent_score - difference, opponent_score - difference))
+                #print(eplist)
+            if ineed == 1:
                 eplist[10] = max(eplist[10], difference * percentages.get(ineed)) 
-
+            #if you need a 1 - 6 (for six-sided) or a 1 - 4 (for four-sided)
+            #update the eplist with the expected value (difference * .1666 or .25)
             if ((ineed >= 2 and ineed <= 6 and dice == six_sided) or 
                 (ineed >= 2 and ineed <= 4 and dice == four_sided)): 
                 eplist[1] = max(eplist[1], difference * percentages.get(ineed))
+                #if (difference * percentages.get(ineed) > 8):
+                #    print("i need a {} to trigger swine swap with benefit: {}  EXP: {}"
+                #    .format(ineed, difference, difference * percentages.get(ineed)))
+                #    print(eplist)
 
             return eplist
             
@@ -416,17 +501,19 @@ def get_statistical_max(score, opponent_score):
 
             return eplist
 
-        #adjust based on guaranteed victory
-        def take_guaranteed_victory(score, opponent_score, eplist):
+        def can_win_with_zero(score, opponent_score, eplist):
             score_with_zero = score + getBaconScore(opponent_score)
             if (score_with_zero >= GOAL_SCORE): #guaranteed victory by rolling a 0
                 if (not causes_swine_swap(score_with_zero, opponent_score)):
                     eplist[0] = 100 #set to arbitrary high # so always rolls this
+                #else:
+                    #print("i can win with zero: {} {}".format(score, opponent_score))
+                    #print("but it causes a swine swap")
             return eplist
 
         eplist = adjust_swine_swap(score, opponent_score, eplist)
         eplist = adjust_try_four(score, opponent_score, eplist)
-        eplist = take_guaranteed_victory(score, opponent_score, eplist)
+        eplist = can_win_with_zero(score, opponent_score, eplist)
         return eplist
 
     dice = select_dice(score, opponent_score)
@@ -445,17 +532,6 @@ def get_statistical_max(score, opponent_score):
     num_dice = adjusted.index(max(adjusted))
     
     return num_dice
-
-### EXPECTED VALUES
-def get_expected_value(opponent_score, dice=six_sided):
-    """ based on 100k rolls """
-    six_list = [getBaconScore(opponent_score),3.50332,5.86032,7.36786, 8.25786,8.59203,8.74338,8.50806,8.17981,7.78308, 7.33582]
-    four_list = [getBaconScore(opponent_score),2.50498,3.80794,4.37158,4.49637,4.3196,4.02963,3.67541,3.33545,2.9528,2.64403]
-
-    if (dice == six_sided):
-        return six_list
-    else: 
-        return four_list
 
 ##########################
 # Command Line Interface #
