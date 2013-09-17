@@ -285,6 +285,10 @@ def run_experiments():
     if False: # Change to False to test swap_strategy
         print('swap_strategy win rate:', average_win_rate(swap_strategy))
 
+    if False:
+        compute_probabilities(7, six_sided)
+        compute_probabilities(8, four_sided)
+
     if True: # Change to False to test final_strategy
         print('final_strategy win rate:', average_win_rate(final_strategy))
 
@@ -368,40 +372,23 @@ def final_strategy(score, opponent_score):
     """
 
     "*** YOUR CODE HERE ***"
+    #def am_behind(score, opponent_score):
+    #    return opponent_score > score
+
+    #if (am_behind(score, opponent_score)):
+
     return get_statistical_max(score,opponent_score) # Replace this statement
 
 ### EXPECTED VALUES
-from operator import sub, add
 def get_expected_value(opponent_score, dice=six_sided):
     """ based on 100k rolls """
-    six_list = [getBaconScore(opponent_score),
-                3.50332,
-                5.86032,
-                7.36786, 
-                8.25786,
-                8.59203,
-                8.74338,
-                8.50806,
-                8.17981,
-                7.78308, 
-                7.33582]
-    four_list = [getBaconScore(opponent_score),
-                2.50498,
-                3.80794,
-                4.37158,
-                4.49637,
-                4.3196,
-                4.02963,
-                3.67541,
-                3.33545,
-                2.9528,
-                2.64403]
+    six_list = [getBaconScore(opponent_score),3.50332,5.86032,7.36786, 8.25786,8.59203,8.74338,8.50806,8.17981,7.78308, 7.33582]
+    four_list = [getBaconScore(opponent_score),2.50498,3.80794,4.37158,4.49637,4.3196,4.02963,3.67541,3.33545,2.9528,2.64403]
 
     if (dice == six_sided):
         return six_list
     else: 
         return four_list
-
 
 def get_statistical_max(score, opponent_score):
     """ This function returns the statistical max score based on a few factors:
@@ -413,7 +400,7 @@ def get_statistical_max(score, opponent_score):
         b)  If it causes a harmfuls core swap, avoid it
         c)  Otherwise just keep the best roll as is
     """
-    percent_one = .8333 #change of rolling a "1" with rolling 10 dice
+    percent_one = .8333 #chance of rolling a "1" with rolling 10 dice
 
     def adjust_expected_values_based_on_scores(score, opponent_score, eplist):
         """
@@ -425,23 +412,14 @@ def get_statistical_max(score, opponent_score):
             score_with_one = score + 1  #chances of rolling a 1 with 10 dice is 83%
             
             #if 0 causes swine swap, calculate benefit and put in eplist
-            def is_beneficial(old_diff, expected):
-                return (expected > old_diff)
 
             if (causes_swine_swap(score_with_zero, opponent_score)):
-                #if is_beneficial(eplist[0], opponent_score - score_with_zero):
-                #    eplist[0] = opponent_score - score_with_zero
-                    #print(eplist)
                 eplist[0] = max(eplist[0], opponent_score - score_with_zero) 
-                #print(eplist)
 
             if (causes_swine_swap(score_with_one, opponent_score)):
-                #if is_beneficial(eplist[10], opponent_score - score_with_one):
-                #    eplist[10] = opponent_score - score_with_one
-                    #print(eplist)
                 eplist[10] = max(eplist[10], 
                     (opponent_score - score_with_one) * percent_one)
-                #print(eplist)
+
             return eplist
             
         #adjust based on trying to force a four dice
@@ -451,12 +429,10 @@ def get_statistical_max(score, opponent_score):
 
             #if 0 could cause opponent to have to roll a four_sided dice, add x to 0
             if ((score_with_zero + opponent_score) % 7 == 0):
-                diff = score_with_zero + 4
-                eplist[0] = max(eplist[0], diff)
+                eplist[0] = max(eplist[0], eplist[0] + 4)
 
             if ((score_with_one + opponent_score) % 7 == 0):
-                diff = score_with_zero + 4
-                eplist[10] = max(eplist[10], diff * percent_one)
+                eplist[10] = max(eplist[10], (eplist[10] + 4) * percent_one)
 
             return eplist
 
@@ -471,25 +447,6 @@ def get_statistical_max(score, opponent_score):
     num_dice = adjusted.index(max(adjusted))
     
     return num_dice
-
-def is_score_swap_within_realm_of_possibility(score, opponent_score):
-    """ Returns true if a score_swap is within a certain threshold (e.g. 40 - 60%)
-    """
-
-def attempt_score_swap(score, opponent_score):
-    """ This function returns the dice roll that will attempt to get a score swap
-    1)  It is meant to be used when the chips are down (e.g. opponent score is over 50)
-        and your score is within a certain threshold (e.g. 40 to 60% of opponent score)
-    2)  Will calculate what you need to trigger a score swap 
-        a)  Will consider how many dice to roll to maximize this chance (e.g. if zero
-            dice will work, then you can just return swap_strategy)
-        b)  Otherwise, attempt to find the number of dice to roll to maximize chance
-    """
-
-def attempt_to_roll_x(x, dice=six_sided):
-    """ This function attempts to roll x, based on a certain number of dice and
-        rolling from 1 - 10 dice max. """
-
 
 ##########################
 # Command Line Interface #
@@ -568,3 +525,421 @@ def run(*args):
             exit(0)
     elif args.run_experiments:
         run_experiments()
+
+#################################################################
+#POSSIBILITY possibility_matrix
+#################################################################
+
+# this function tries to roll a ____, based on the best way to do it
+def compute_probabilities(num_rolls, dice=six_sided):
+    #compute possibilities
+    k = 1
+    global possibilities
+    def f(dice, k):
+        if (dice == six_sided):
+            return pow(6,k)
+        return pow(4,k)
+
+    while (k <= num_rolls):
+        print("Rolling {} dice possibilities.".format(k))
+        possibilities = list()
+        get_possibilities("", k, dice)
+        convert_possibilities_to_matrix(possibilities, f(dice, k))
+        k += 1
+    
+possibilities = list()
+def get_possibilities(total, num_rolls, dice):
+    i = 1
+    global possibilities
+    if (num_rolls == 0):
+        return total
+
+    if (dice == six_sided):
+        sides = 6
+    else:
+        sides = 4
+    while (i <= sides):
+        mystr = get_possibilities(str(total) + str(i), num_rolls-1, dice)
+        if (not mystr == None):
+            possibilities.append(mystr)
+        i += 1
+
+import json 
+def convert_possibilities_to_matrix(possibilities, max_possibilities):
+    def get_total(roll):
+        l = list(roll)
+        total = 0
+        for i in l:
+            if (int(i) == 1):
+                return 1
+            total += int(i)
+        return total
+
+    def convert_possibility_to_probability(possibility_matrix, max_possibilities):
+        for k in possibility_matrix.keys():
+            possibility_matrix[k] = possibility_matrix[k] / max_possibilities
+        return possibility_matrix
+
+    possibility_matrix = {}
+    for item in possibilities:
+        total = get_total(item)
+        if total in possibility_matrix:
+            possibility_matrix[total] += 1
+        else:
+            possibility_matrix[total] = 1
+
+    #print(json.dumps(possibility_matrix, indent=4))
+
+    possibility_matrix = convert_possibility_to_probability(possibility_matrix, max_possibilities)
+    print(json.dumps(possibility_matrix, indent=4))
+
+""" - BASICALLY, rolling anything but 1 is really hard to do
+
+****    SIX SIDED DICE  ****
+
+Rolling 1 dice possibilities.
+{
+    "1": 0.16666666666666666, 
+    "2": 0.16666666666666666, 
+    "3": 0.16666666666666666, 
+    "4": 0.16666666666666666, 
+    "5": 0.16666666666666666, 
+    "6": 0.16666666666666666
+}
+Rolling 2 dice possibilities.
+{
+    "1": 0.3055555555555556, 
+    "4": 0.027777777777777776, 
+    "5": 0.05555555555555555, 
+    "6": 0.08333333333333333, 
+    "7": 0.1111111111111111, 
+    "8": 0.1388888888888889, 
+    "9": 0.1111111111111111, 
+    "10": 0.08333333333333333, 
+    "11": 0.05555555555555555, 
+    "12": 0.027777777777777776
+}
+Rolling 3 dice possibilities.
+{
+    "1": 0.4212962962962963, 
+    "6": 0.004629629629629629, 
+    "7": 0.013888888888888888, 
+    "8": 0.027777777777777776, 
+    "9": 0.046296296296296294, 
+    "10": 0.06944444444444445, 
+    "11": 0.08333333333333333, 
+    "12": 0.08796296296296297, 
+    "13": 0.08333333333333333, 
+    "14": 0.06944444444444445, 
+    "15": 0.046296296296296294, 
+    "16": 0.027777777777777776, 
+    "17": 0.013888888888888888, 
+    "18": 0.004629629629629629
+}
+Rolling 4 dice possibilities.
+{
+    "1": 0.5177469135802469, 
+    "8": 0.0007716049382716049, 
+    "9": 0.0030864197530864196, 
+    "10": 0.007716049382716049, 
+    "11": 0.015432098765432098, 
+    "12": 0.02700617283950617, 
+    "13": 0.040123456790123455, 
+    "14": 0.05246913580246913, 
+    "15": 0.06172839506172839, 
+    "16": 0.06558641975308642, 
+    "17": 0.06172839506172839, 
+    "18": 0.05246913580246913, 
+    "19": 0.040123456790123455, 
+    "20": 0.02700617283950617, 
+    "21": 0.015432098765432098, 
+    "22": 0.007716049382716049, 
+    "23": 0.0030864197530864196, 
+    "24": 0.0007716049382716049
+}
+Rolling 5 dice possibilities.
+{
+    "1": 0.5981224279835391, 
+    "10": 0.0001286008230452675, 
+    "11": 0.0006430041152263374, 
+    "12": 0.0019290123456790122, 
+    "13": 0.0045010288065843625, 
+    "14": 0.009002057613168725, 
+    "15": 0.015560699588477367, 
+    "16": 0.023791152263374485, 
+    "17": 0.03279320987654321, 
+    "18": 0.0411522633744856, 
+    "19": 0.04693930041152263, 
+    "20": 0.048996913580246916, 
+    "21": 0.04693930041152263, 
+    "22": 0.0411522633744856, 
+    "23": 0.03279320987654321, 
+    "24": 0.023791152263374485, 
+    "25": 0.015560699588477367, 
+    "26": 0.009002057613168725, 
+    "27": 0.0045010288065843625, 
+    "28": 0.0019290123456790122, 
+    "29": 0.0006430041152263374, 
+    "30": 0.0001286008230452675
+}
+Rolling 6 dice possibilities.
+{
+    "1": 0.6651020233196159, 
+    "12": 2.143347050754458e-05, 
+    "13": 0.0001286008230452675, 
+    "14": 0.0004501028806584362, 
+    "15": 0.0012002743484224967, 
+    "16": 0.002700617283950617, 
+    "17": 0.005272633744855967, 
+    "18": 0.009130658436213992, 
+    "19": 0.01427469135802469, 
+    "20": 0.020383230452674896, 
+    "21": 0.02670610425240055, 
+    "22": 0.03227880658436214, 
+    "23": 0.03613683127572016, 
+    "24": 0.037530006858710566, 
+    "25": 0.03613683127572016, 
+    "26": 0.03227880658436214, 
+    "27": 0.02670610425240055, 
+    "28": 0.020383230452674896, 
+    "29": 0.01427469135802469, 
+    "30": 0.009130658436213992, 
+    "31": 0.005272633744855967, 
+    "32": 0.002700617283950617, 
+    "33": 0.0012002743484224967, 
+    "34": 0.0004501028806584362, 
+    "35": 0.0001286008230452675, 
+    "36": 2.143347050754458e-05
+}
+
+Rolling 7 dice possibilities.
+{
+    "1": 0.7209183527663466, 
+    "14": 3.5722450845907635e-06, 
+    "15": 2.5005715592135344e-05, 
+    "16": 0.00010002286236854138, 
+    "17": 0.00030006858710562417, 
+    "18": 0.0007501714677640603, 
+    "19": 0.0016253715134887975, 
+    "20": 0.003125714449016918, 
+    "21": 0.005429812528577961, 
+    "22": 0.008626971879286694, 
+    "23": 0.01262788637402835, 
+    "24": 0.01712891518061271, 
+    "25": 0.021629943987197073, 
+    "26": 0.025505829903978053, 
+    "27": 0.028131430041152265, 
+    "28": 0.02906021376314586, 
+    "29": 0.028131430041152265, 
+    "30": 0.025505829903978053, 
+    "31": 0.021629943987197073, 
+    "32": 0.01712891518061271, 
+    "33": 0.01262788637402835, 
+    "34": 0.008626971879286694, 
+    "35": 0.005429812528577961, 
+    "36": 0.003125714449016918, 
+    "37": 0.0016253715134887975, 
+    "38": 0.0007501714677640603, 
+    "39": 0.00030006858710562417, 
+    "40": 0.00010002286236854138, 
+    "41": 2.5005715592135344e-05, 
+    "42": 3.5722450845907635e-06
+}
+Rolling 8 dice possibilities.
+{
+    "1": 0.7674319606386222, 
+    "16": 5.953741807651273e-07, 
+    "17": 4.762993446121018e-06, 
+    "18": 2.143347050754458e-05, 
+    "19": 7.144490169181528e-05, 
+    "20": 0.000196473479652492, 
+    "21": 0.0004667733577198598, 
+    "22": 0.0009835581466239903, 
+    "23": 0.0018718564243255602, 
+    "24": 0.003259673639689072, 
+    "25": 0.00523929279073312, 
+    "26": 0.007823216735253772, 
+    "27": 0.010907254991617132, 
+    "28": 0.014253257887517147, 
+    "29": 0.017504000914494743, 
+    "30": 0.020242722146014327, 
+    "31": 0.02207647462277092, 
+    "32": 0.02272245560890108, 
+    "33": 0.02207647462277092, 
+    "34": 0.020242722146014327, 
+    "35": 0.017504000914494743, 
+    "36": 0.014253257887517147, 
+    "37": 0.010907254991617132, 
+    "38": 0.007823216735253772, 
+    "39": 0.00523929279073312, 
+    "40": 0.003259673639689072, 
+    "41": 0.0018718564243255602, 
+    "42": 0.0009835581466239903, 
+    "43": 0.0004667733577198598, 
+    "44": 0.000196473479652492, 
+    "45": 7.144490169181528e-05, 
+    "46": 2.143347050754458e-05, 
+    "47": 4.762993446121018e-06, 
+    "48": 5.953741807651273e-07
+}
+Rolling 9 dice possibilities.
+{
+    "1": 0.8061933005321852, 
+    "18": 9.92290301275212e-08, 
+    "19": 8.930612711476909e-07, 
+    "20": 4.465306355738455e-06, 
+    "21": 1.6372789971041e-05, 
+    "22": 4.9118369913123e-05, 
+    "23": 0.0001268147005029721, 
+    "24": 0.000289947226032617, 
+    "25": 0.0005983510516689529, 
+    "26": 0.001129722508001829, 
+    "27": 0.0019701923931819336, 
+    "28": 0.0031962662894375856, 
+    "29": 0.004850215763603109, 
+    "30": 0.006913782674135041, 
+    "31": 0.009287837219935985, 
+    "32": 0.01178840877914952, 
+    "33": 0.014163951760402377, 
+    "34": 0.016133151863283037, 
+    "35": 0.017437021319158665, 
+    "36": 0.017893474857745263, 
+    "37": 0.017437021319158665, 
+    "38": 0.016133151863283037, 
+    "39": 0.014163951760402377, 
+    "40": 0.01178840877914952, 
+    "41": 0.009287837219935985, 
+    "42": 0.006913782674135041, 
+    "43": 0.004850215763603109, 
+    "44": 0.0031962662894375856, 
+    "45": 0.0019701923931819336, 
+    "46": 0.001129722508001829, 
+    "47": 0.0005983510516689529, 
+    "48": 0.000289947226032617, 
+    "49": 0.0001268147005029721, 
+    "50": 4.9118369913123e-05, 
+    "51": 1.6372789971041e-05, 
+    "52": 4.465306355738455e-06, 
+    "53": 8.930612711476909e-07, 
+    "54": 9.92290301275212e-08
+}
+    10 times out lol
+
+***** FOUR SIDED DICE   ***********
+
+Rolling 1 dice possibilities.
+{
+    "1": 0.25, 
+    "2": 0.25, 
+    "3": 0.25, 
+    "4": 0.25
+}
+Rolling 2 dice possibilities.
+{
+    "1": 0.4375, 
+    "4": 0.0625, 
+    "5": 0.125, 
+    "6": 0.1875, 
+    "7": 0.125, 
+    "8": 0.0625
+}
+Rolling 3 dice possibilities.
+{
+    "1": 0.578125, 
+    "6": 0.015625, 
+    "7": 0.046875, 
+    "8": 0.09375, 
+    "9": 0.109375, 
+    "10": 0.09375, 
+    "11": 0.046875, 
+    "12": 0.015625
+}
+Rolling 4 dice possibilities.
+{
+    "1": 0.68359375, 
+    "8": 0.00390625, 
+    "9": 0.015625, 
+    "10": 0.0390625, 
+    "11": 0.0625, 
+    "12": 0.07421875, 
+    "13": 0.0625, 
+    "14": 0.0390625, 
+    "15": 0.015625, 
+    "16": 0.00390625
+}
+Rolling 5 dice possibilities.
+{
+    "1": 0.7626953125, 
+    "10": 0.0009765625, 
+    "11": 0.0048828125, 
+    "12": 0.0146484375, 
+    "13": 0.029296875, 
+    "14": 0.0439453125, 
+    "15": 0.0498046875, 
+    "16": 0.0439453125, 
+    "17": 0.029296875, 
+    "18": 0.0146484375, 
+    "19": 0.0048828125, 
+    "20": 0.0009765625
+}
+Rolling 6 dice possibilities.
+{
+    "1": 0.822021484375, 
+    "12": 0.000244140625, 
+    "13": 0.00146484375, 
+    "14": 0.005126953125, 
+    "15": 0.01220703125, 
+    "16": 0.02197265625, 
+    "17": 0.03076171875, 
+    "18": 0.034423828125, 
+    "19": 0.03076171875, 
+    "20": 0.02197265625, 
+    "21": 0.01220703125, 
+    "22": 0.005126953125, 
+    "23": 0.00146484375, 
+    "24": 0.000244140625
+}
+Rolling 7 dice possibilities.
+{
+    "1": 0.86651611328125, 
+    "14": 6.103515625e-05, 
+    "15": 0.00042724609375, 
+    "16": 0.001708984375, 
+    "17": 0.00469970703125, 
+    "18": 0.00982666015625, 
+    "19": 0.0162353515625, 
+    "20": 0.02178955078125, 
+    "21": 0.02398681640625, 
+    "22": 0.02178955078125, 
+    "23": 0.0162353515625, 
+    "24": 0.00982666015625, 
+    "25": 0.00469970703125, 
+    "26": 0.001708984375, 
+    "27": 0.00042724609375, 
+    "28": 6.103515625e-05
+}
+Rolling 8 dice possibilities.
+{
+    "32": 1.52587890625e-05, 
+    "1": 0.8998870849609375, 
+    "16": 1.52587890625e-05, 
+    "17": 0.0001220703125, 
+    "18": 0.00054931640625, 
+    "19": 0.001708984375, 
+    "20": 0.004058837890625, 
+    "21": 0.0076904296875, 
+    "22": 0.011962890625, 
+    "23": 0.0155029296875, 
+    "24": 0.0168914794921875, 
+    "25": 0.0155029296875, 
+    "26": 0.011962890625, 
+    "27": 0.0076904296875, 
+    "28": 0.004058837890625, 
+    "29": 0.001708984375, 
+    "30": 0.00054931640625, 
+    "31": 0.0001220703125
+}
+
+
+}
+"""
