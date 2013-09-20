@@ -218,7 +218,7 @@ def count_change(amount):
             return 1
         else:
             #print("CALL: combination_base2({},{}) + combination_base2({},{})".format(
-            #    n-log2x.get(m), m, n, m-1))
+            #    n-pow(2,m), m, n, m-1))
             return combination_base2(n-pow(2,m), m) + combination_base2(n, m-1)
 
     biggest = get_denoms(amount)
