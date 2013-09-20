@@ -163,6 +163,10 @@ def pingpong(n):
 def ten_pairs(n):
     """Return the number of ten-pairs within positive integer n.
 
+    >>> ten_pairs(319)
+    1
+    >>> ten_pairs(3195)
+    1
     >>> ten_pairs(7823952)
     3
     >>> ten_pairs(55055)
@@ -171,6 +175,18 @@ def ten_pairs(n):
     6
     """
     "*** YOUR CODE HERE ***"
+    def get_num_pairs(n, remainder):
+        if (n == 0):
+            return 0
+        elif (n % 10 + remainder == 10):
+            return 1 + get_num_pairs(n//10, remainder)
+        else:
+            return get_num_pairs(n//10, remainder)
+
+    if (n < 10):
+        return 0
+    return get_num_pairs(n // 10, n % 10) + ten_pairs(n // 10)
+    
 
 # Q5.
 
@@ -206,6 +222,7 @@ if __name__ == '__main__':
     
     #doctest.run_docstring_examples(combinations, globals(), True, __name__)
    #doctest.run_docstring_examples(has_seven, globals(), True, __name__)
-    doctest.run_docstring_examples(g, globals(), True, __name__)
-    doctest.run_docstring_examples(g_iter, globals(), True, __name__)
-    doctest.run_docstring_examples(pingpong, globals(), True, __name__)
+    #doctest.run_docstring_examples(g, globals(), True, __name__)
+    #doctest.run_docstring_examples(g_iter, globals(), True, __name__)
+    #doctest.run_docstring_examples(pingpong, globals(), True, __name__)
+    doctest.run_docstring_examples(ten_pairs, globals(), True, __name__)
