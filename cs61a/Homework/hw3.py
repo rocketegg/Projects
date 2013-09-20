@@ -124,26 +124,35 @@ def pingpong(n):
     >>> pingpong(100)
     2
     """
+    """
+    pingpong7
+    ping0 = ping 1 + 1
+    ping 1 = ping 2 + 1
+    ping 2 = ping 3 + 1
+    ping 3 = ping 4 + 1
+    ping 4 = ping 5 + 1
+    ping 6 = ping 7 + 1
+    ping 7 = 1
+    """
     "*** YOUR CODE HERE ***"
-    def ping(n):
-        if (n == 0):
+    def ping(num):
+        #print ("ping: {}".format(num))
+        if (num == n):
             return 1
-        if (n % 7 == 0) or (has_seven(n)):
-            #print ("ping: {}".format(n))
-            return pong(n-1) + 1
-        return ping(n-1) + 1
+        if (num % 7 == 0) or (has_seven(num)):
+            return pong(num+1) + 1
+        return ping(num+1) + 1
 
-    def pong(n):
-        if (n == 0):
-            return 0
-        if (n % 7 == 0) or (has_seven(n)):
-            #print ("pong: ".format(n))
-            return ping(n-1) - 1
-        return pong(n-1) - 1
+    def pong(num):
+        #print ("pong: {}".format(num))
+        if (num == n):
+            return -1
+        if (num % 7 == 0) or (has_seven(num)):
+            return ping(num+1) - 1
+        return pong(num+1) - 1
 
     #how to decide whether to call ping or pong first?
-    return pong(n-1)
-
+    return ping(1)
 # Q4.
 
 def ten_pairs(n):
