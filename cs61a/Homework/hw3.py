@@ -1,6 +1,33 @@
 # Name:
 # Email:
 
+# All combinations addition
+# provides sum combinations of n using int up to size m
+def combinations(n, m):
+    """
+    >>> combinations(6, 4)
+    9
+    >>> combinations(5, 5)
+    7
+    >>> combinations(10, 10)
+    42
+    >>> combinations(15, 15)
+    176
+    >>> combinations(20, 20)
+    627
+
+    #3+1
+    #1+1+1+1
+    #1+2+1
+    #2+2
+    """
+    if (n < 0 or m <= 0):
+        return 0
+    elif (m == 1):
+        return 1
+    else:
+        return combinations(n-m, m) + combinations(n, m-1)
+
 # Q1.
 
 def g(n):
@@ -17,7 +44,18 @@ def g(n):
     >>> g(5)
     22
     """
+    """
+    g(5) = g(4) + 2*g(3) + 3*g(2) + 4*g(1)
+    g(4) = g(3) + 2*g(2) + 3*g(1)
+    g(3) = 3
+    g(2) = 2
+    g(1) = 1
+    g(4) = 1*g(3)+
+    """
     "*** YOUR CODE HERE ***"
+    if (n <= 3):
+        return n
+    return g(n-1)
 
 def g_iter(n):
     """Return the value of G(n), computed iteratively.
@@ -35,6 +73,7 @@ def g_iter(n):
     """
     "*** YOUR CODE HERE ***"
 
+
 # Q2.
 
 def has_seven(k):
@@ -42,6 +81,8 @@ def has_seven(k):
     >>> has_seven(3)
     False
     >>> has_seven(7)
+    True
+    >>> has_seven(17)
     True
     >>> has_seven(2734)
     True
@@ -53,6 +94,12 @@ def has_seven(k):
     True
     """
     "*** YOUR CODE HERE ***"
+    if (k == 0):
+        return False
+    elif (k % 10 == 7):
+        return True
+    else:
+        return has_seven(k // 10)
 
 # Q3.
 
@@ -78,6 +125,24 @@ def pingpong(n):
     2
     """
     "*** YOUR CODE HERE ***"
+    def ping(n):
+        if (n == 0):
+            return 1
+        if (n % 7 == 0) or (has_seven(n)):
+            #print ("ping: {}".format(n))
+            return pong(n-1) + 1
+        return ping(n-1) + 1
+
+    def pong(n):
+        if (n == 0):
+            return 0
+        if (n % 7 == 0) or (has_seven(n)):
+            #print ("pong: ".format(n))
+            return ping(n-1) - 1
+        return pong(n-1) - 1
+
+    #how to decide whether to call ping or pong first?
+    return pong(n-1)
 
 # Q4.
 
@@ -122,3 +187,9 @@ def make_anonymous_factorial():
     return YOUR_EXPRESSION_HERE
 
 
+if __name__ == '__main__':
+    import doctest
+    
+    #doctest.run_docstring_examples(combinations, globals(), True, __name__)
+   #doctest.run_docstring_examples(has_seven, globals(), True, __name__)
+    doctest.run_docstring_examples(pingpong, globals(), True, __name__)
