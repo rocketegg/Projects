@@ -55,7 +55,7 @@ def g(n):
     "*** YOUR CODE HERE ***"
     if (n <= 3):
         return n
-    return g(n-1)
+    return g(n-1) + 2*g(n-2) + 3*g(n-3)
 
 def g_iter(n):
     """Return the value of G(n), computed iteratively.
@@ -72,7 +72,12 @@ def g_iter(n):
     22
     """
     "*** YOUR CODE HERE ***"
-
+    gn1, gn2, gn3 = 3, 2, 1
+    count, result = 3, n
+    while (count < n):
+        result = gn1 + 2*gn2 + 3*gn3
+        gn3, gn2, gn1, count = gn2, gn1, result, count + 1
+    return result
 
 # Q2.
 
@@ -201,4 +206,6 @@ if __name__ == '__main__':
     
     #doctest.run_docstring_examples(combinations, globals(), True, __name__)
    #doctest.run_docstring_examples(has_seven, globals(), True, __name__)
+    doctest.run_docstring_examples(g, globals(), True, __name__)
+    doctest.run_docstring_examples(g_iter, globals(), True, __name__)
     doctest.run_docstring_examples(pingpong, globals(), True, __name__)
