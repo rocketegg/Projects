@@ -203,6 +203,26 @@ def count_change(amount):
     9828
     """
     "*** YOUR CODE HERE ***"
+    def get_denoms(n):
+        x = 0
+        while (pow(2,x) <= n):
+            x = x + 1
+        return x
+
+    def combination_base2(n, m):
+        if (n < 0):
+            #print("   > BASE: return 0 on call combination_base({},{})".format(n,m))
+            return 0
+        if (m == 0):
+            #print("   > BASE: return 1 on call combination_base({},{})".format(n,m))
+            return 1
+        else:
+            #print("CALL: combination_base2({},{}) + combination_base2({},{})".format(
+            #    n-log2x.get(m), m, n, m-1))
+            return combination_base2(n-pow(2,m), m) + combination_base2(n, m-1)
+
+    biggest = get_denoms(amount)
+    return combination_base2(amount, biggest)
 
 # Q6.
 
@@ -225,4 +245,5 @@ if __name__ == '__main__':
     #doctest.run_docstring_examples(g, globals(), True, __name__)
     #doctest.run_docstring_examples(g_iter, globals(), True, __name__)
     #doctest.run_docstring_examples(pingpong, globals(), True, __name__)
-    doctest.run_docstring_examples(ten_pairs, globals(), True, __name__)
+    #doctest.run_docstring_examples(ten_pairs, globals(), True, __name__)
+    doctest.run_docstring_examples(count_change, globals(), True, __name__)
