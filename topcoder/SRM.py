@@ -19,9 +19,10 @@ class BinaryCode:
 	Now note that Q[2] = P[1] + P[2] + P[3] = 0 + 1 + P[3] = 3, which leads us to the conclusion that P[3] = 2. However, this violates the fact that each character in the original string must be '0' or '1'. Therefore, there exists no such original string P where the first digit is '1'.
 	Note that this algorithm produces at most two decodings for any given encrypted string. There can never be more than one possible way to decode a string once the first binary digit is set.
 	Given a string message, containing the encrypted string, return a tuple (string) with exactly two elements. The first element should contain the decrypted string assuming the first character is '0'; the second element should assume the first character is '1'. If one of the tests fails, return the string "NONE" in its place. For the above example, you should return {"011100011", "NONE"}
+
 	"""
 
-	def iterate_over(string, p_zero):
+	def iterate_over(self, string, p_zero):
 		"""assume p[0] = 0"""
 		count, result = 0, ''
 		for c in string:
@@ -36,7 +37,9 @@ class BinaryCode:
 			else:
 				pplus1 = q - p - pminus1
 
-			if (pplus1 != 0) and (pplus1 != 1):
+			if 	(pplus1 != 0 and pplus1 != 1) or \
+				(pplus1 == 1 and count == len(string)-1):	
+				#this happens if p and pminus1 are 0
 				return 'NONE'
 			result = result + str(p)
 			pminus1, p, count = p, pplus1, count + 1
@@ -45,22 +48,26 @@ class BinaryCode:
 	
 	def decode(self, message):
 		"""
-		>>> BinaryCode.decode("", "123210122")
+		>>> a = BinaryCode()
+		>>> a.decode("123210122")
 		('011100011', 'NONE')
-
-		>>> BinaryCode.decode("", "11")
+		>>> a.decode("11")
 		('01', '10')
-		>>> BinaryCode.decode("", "22111")
+		>>> a.decode("22111")
 		('NONE', '11001')
-		>>> BinaryCode.decode("", "123210120")
+		>>> a.decode("123210120")
 		('NONE', 'NONE')
-		>>> BinaryCode.decode("", "3")
+		>>> a.decode("3")
 		('NONE', 'NONE')
-		>>> BinaryCode.decode("", "12221112222221112221111111112221111")
+		>>> a.decode("12221112222221112221111111112221111")
 		('01101001101101001101001001001101001', '10110010110110010110010010010110010')
+		>>> a.decode("2")
+		('NONE', 'NONE')
+		>>> a.decode("1")
+		('NONE', '1')
 
 		"""
-		return BinaryCode.iterate_over(message, 0), BinaryCode.iterate_over(message, 1)
+		return self.iterate_over(message, 0), self.iterate_over(message, 1)
 
 if __name__ == '__main__':
     import doctest
