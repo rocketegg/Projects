@@ -127,4 +127,14 @@ public class TicTacToeBoard {
 		System.out.println();
 	}
 	
+	public String getStringRepresentation() {
+		StringBuilder sb = new StringBuilder();
+		for (int row = 0; row < rows; row++) {
+			for (int col = 0; col < cols; col++) {
+				sb.append(board[row][col]);
+			}
+		}
+		return sb.toString();
+	}
+	
 }

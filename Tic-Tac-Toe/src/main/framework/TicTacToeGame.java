@@ -29,6 +29,13 @@ public class TicTacToeGame {
 		this.player2 = player2;
 	}
 	
+	public TicTacToeGame(TicTacToeBoard board, Player player1, Player player2) {
+		this.board = board;
+		this.player1 = player1;
+		this.player2 = player2;
+		this.player1Turn = true;	//assume it's player1's turn
+	}
+	
 	/**
 	 * Returns whether there is a winner
 	 * @return
@@ -72,6 +79,7 @@ public class TicTacToeGame {
 	public int playEntireGame() {
 		while (!hasWinner() && !hasTie()) {
 			takeTurn();
+			//board.print();
 		}
 		board.print();
 		System.out.println("Game over.");
@@ -164,7 +172,5 @@ public class TicTacToeGame {
 		}
 		return false;
 	}
-	
-
 	
 }

@@ -7,11 +7,114 @@ import main.framework.TicTacToeBoard;
 
 public class TicTacToeBoardExaminer {
 
+	private static final int PLAYER_WIN = 1;
+	private static final int OPPONENT_WIN = -1;
+	private static final int TIE = 0;
+	private static final int NO_WINNER_YET = 10;
+	
 	private TicTacToeBoard board;
 	
 	public TicTacToeBoardExaminer(TicTacToeBoard board) {
 		this.board = board;
 	}
+	
+	/**
+	 * Returns a score (if possible) based on a board configuration and 
+	 * if you are the side
+	 * Scores:
+	 * 		1: side has won
+	 * 	   -1: other side has won
+	 *      0: is tie
+	 *  
+	 * @param board
+	 * @param side
+	 * @return
+	 */
+	public static int getScore(TicTacToeBoard board, String side) {
+		String otherSide = side.equals("X") ? "O" : "X";
+		if (sideHasWon(board, "X"))
+			return PLAYER_WIN;
+		else if (sideHasWon(board, "O"))
+			return OPPONENT_WIN;
+		else if (board.getAllOpenCells().size() == 0)
+			return TIE;
+		else
+			return NO_WINNER_YET;
+	}
+	
+	private static boolean sideHasWon(TicTacToeBoard board, String side) {
+		return isRowWinner(board, side) || isColumnWinner(board, side) || isDiagonalWinner(board, side);
+	}
+	
+	/**
+	 * Returns the player if there is a player who wins by row
+	 * @return the Player, otherwise returns null
+	 */
+	private static boolean isRowWinner(TicTacToeBoard board, String side) {
+		for (int row = 0; row < board.getRows(); row++) {
+			boolean hasWinner = true;
+			String iside = board.getCell(row, 0).getValue();
+			if (iside.equals(side)) {
+				for (int col = 1; col < board.getCols(); col++) {
+					hasWinner &= iside.equals(board.getCell(row, col).getValue());
+				}
+				if (hasWinner) {
+					return true;
+				}
+			} else {
+				hasWinner = false;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * returns if there is a column winner
+	 * @return
+	 */
+	private static boolean isColumnWinner(TicTacToeBoard board, String side) {
+		for (int col = 0; col < board.getCols(); col++) {
+			boolean hasWinner = true;
+			String iside = board.getCell(0, col).getValue();
+			if (iside.equals(side)) {
+				for (int row = 1; row < board.getRows(); row++) {
+					hasWinner &= iside.equals(board.getCell(row, col).getValue());
+				}
+				if (hasWinner) {
+					return true;
+				}
+			} else {
+				hasWinner = false;
+			}
+		}
+		return false;
+	}
+	
+	private static boolean isDiagonalWinner(TicTacToeBoard board, String side) {
+		boolean hasWinner = true;
+		String topLeft = board.getCell(0,0).getValue();
+		if (topLeft.equals(side)) {
+			for (int x = 1; x < board.getCols(); x++) {
+				hasWinner &= topLeft.equals(board.getCell(x,x).getValue());
+			}
+			if (hasWinner) {
+				return true;
+			}
+		}
+		
+		hasWinner = true;
+		String topRight = board.getCell(0,board.getCols()-1).getValue();
+		if (topRight.equals(side)) {
+			for (int row = 1; row < board.getRows(); row++) {
+				hasWinner &= topRight.equals(board.getCell(row,board.getCols()-1-row).getValue());
+			}
+			if (hasWinner) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	
 	/**
 	 * Returns an arraylist of winning positions for the side X or O

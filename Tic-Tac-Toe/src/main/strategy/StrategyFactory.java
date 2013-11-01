@@ -1,6 +1,7 @@
 package main.strategy;
 
 import main.framework.TicTacToeBoard;
+import main.strategy.impl.MinimaxStrategy;
 import main.strategy.impl.RandomStrategy;
 import main.strategy.impl.TieStrategy;
 import main.strategy.impl.WinStrategy;
@@ -18,8 +19,10 @@ public class StrategyFactory {
 			return new WinStrategy(board, side);
 		} else if (strategy.equalsIgnoreCase("tie")) {
 			return new TieStrategy(board, side);
-		} else if (strategy.equalsIgnoreCase("random")){
+		} else if (strategy.equalsIgnoreCase("random")) {
 			return new RandomStrategy(board, side);
+		} else if (strategy.equalsIgnoreCase("minimax")) {
+			return new MinimaxStrategy(board, side);
 		} else {
 			return null;
 		}

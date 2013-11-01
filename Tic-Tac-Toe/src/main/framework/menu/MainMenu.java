@@ -98,7 +98,7 @@ public class MainMenu implements Menu{
 	}
 	
 	private Player getPlayerFromMenu(String side) {
-		 System.out.print("Select " + side + " player - [Champ = 'C', George = 'G', Toby = 'T', Manual = 'M']: ");
+		 System.out.print("Select " + side + " player - [Champ = 'C', George = 'G', Toby = 'T', Computer = 'B', Manual = 'M']: ");
          String option = in.next();
          if (option.equalsIgnoreCase("C")) {
          	return playerFactory.getNewPlayer("Champ", side);
@@ -106,6 +106,8 @@ public class MainMenu implements Menu{
          	return playerFactory.getNewPlayer("George", side);
          } else if (option.equalsIgnoreCase("T")) {
          	return playerFactory.getNewPlayer("Toby", side);
+         } else if (option.equalsIgnoreCase("B")) {
+          	return playerFactory.getNewPlayer("Computer", side);
          } else {
         	 return playerFactory.getNewPlayer("Person", side);
          }
