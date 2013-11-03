@@ -5,17 +5,20 @@ import java.util.ArrayList;
 import main.framework.GridCell;
 import main.framework.TicTacToeBoard;
 
+/**
+ * Non-instantiable tatic class that examines a board configuration and can return
+ * certain things related to it
+ * @author rocketegg
+ *
+ */
 public class TicTacToeBoardExaminer {
 
-	private static final int PLAYER_WIN = 10;
-	private static final int OPPONENT_WIN = -10;
-	private static final int TIE = 0;
-	private static final int NO_WINNER_YET = 100;
+	public static final int PLAYER_WIN = 10;
+	public static final int OPPONENT_WIN = -10;
+	public static final int TIE = 0;
+	public static final int NO_WINNER_YET = 100;
 	
-	private TicTacToeBoard board;
-	
-	public TicTacToeBoardExaminer(TicTacToeBoard board) {
-		this.board = board;
+	private TicTacToeBoardExaminer() {
 	}
 	
 	/**
@@ -45,6 +48,20 @@ public class TicTacToeBoardExaminer {
 			return TIE;// + depth;
 		else
 			return NO_WINNER_YET;
+	}
+	
+	/**
+	 * Returns the max score possible (i.e. a guaranteed win for X or O
+	 * which is a win (score of 10) minus depth of 1 (1 move required)
+	 * @param side
+	 * @return
+	 */
+	public static int maxWinScore(String side) {
+		if (side.equals("X")) {
+			return PLAYER_WIN - 1;
+		} else {
+			return OPPONENT_WIN - 1;
+		}
 	}
 	
 	private static boolean sideHasWon(TicTacToeBoard board, String side) {
@@ -126,7 +143,7 @@ public class TicTacToeBoardExaminer {
 	 * @param side
 	 * @return
 	 */
-	public ArrayList<GridCell> getWinningPositions(String side) {
+	public static ArrayList<GridCell> getWinningPositions(TicTacToeBoard board, String side) {
 		ArrayList<GridCell> winningPositions = new ArrayList<GridCell>();	
 		GridCell winningPosition = new GridCell(0,0,false);	//dummy gridcell
 		//Check columns for winning position
@@ -201,9 +218,9 @@ public class TicTacToeBoardExaminer {
 	 * @param side
 	 * @return
 	 */
-	public ArrayList<GridCell> getLosingPositions(String side) {
+	public static ArrayList<GridCell> getLosingPositions(TicTacToeBoard board, String side) {
 		String otherSide = side.equals("X") ? "O" : "X"; 
-		ArrayList<GridCell> losingPositions = getWinningPositions(otherSide);
+		ArrayList<GridCell> losingPositions = getWinningPositions(board, otherSide);
 		for (GridCell g : losingPositions) {
 			g.setValue(side);
 		}
@@ -215,12 +232,12 @@ public class TicTacToeBoardExaminer {
 	 * @param side
 	 * @return
 	 */
-	public GridCell getOptimal(String side) {
-		GridCell center = getCenter(side);
+	public static GridCell getOptimal(TicTacToeBoard board, String side) {
+		GridCell center = getCenter(board, side);
 		if (center != null) 
 			return center;
 		
-		GridCell cornerMove = getCorner(side);
+		GridCell cornerMove = getCorner(board, side);
 		if (cornerMove != null)
 			return cornerMove;
 		
@@ -228,7 +245,7 @@ public class TicTacToeBoardExaminer {
 		
 	}
 	
-	public GridCell getCenter(String side) {
+	public static GridCell getCenter(TicTacToeBoard board, String side) {
 		if (board.getCell(1, 1).isOpen()) 
 			return new GridCell(1,1,false,side);
 		else 
@@ -240,7 +257,7 @@ public class TicTacToeBoardExaminer {
 	 * @param side
 	 * @return
 	 */
-	private GridCell getCorner(String side) {
+	private static GridCell getCorner(TicTacToeBoard board, String side) {
 		if (board.getCell(0, 2).isOpen()) {
 			return new GridCell(0,2,false,side);
 		} else if (board.getCell(2,2).isOpen()) {
@@ -259,9 +276,9 @@ public class TicTacToeBoardExaminer {
 	 * @param side
 	 * @return
 	 */
-	public ArrayList<GridCell> getNonWinningPosition(String side) {
-		ArrayList<GridCell> openMoves = getAllOpenMoves(side);
-		ArrayList<GridCell> winningMoves = getWinningPositions(side);
+	public static ArrayList<GridCell> getNonWinningPosition(TicTacToeBoard board, String side) {
+		ArrayList<GridCell> openMoves = getAllOpenMoves(board, side);
+		ArrayList<GridCell> winningMoves = getWinningPositions(board, side);
 		boolean movesRemoved = openMoves.removeAll(winningMoves);
 		return openMoves;
 	}
@@ -271,7 +288,7 @@ public class TicTacToeBoardExaminer {
 	 * @param side
 	 * @return
 	 */
-	public ArrayList<GridCell> getAllOpenMoves(String side) {
+	public static ArrayList<GridCell> getAllOpenMoves(TicTacToeBoard board, String side) {
 		ArrayList<GridCell> openBoard = board.getAllOpenCells();
 		ArrayList<GridCell> openMoves = new ArrayList<GridCell>();
 		for (GridCell g : openBoard) {

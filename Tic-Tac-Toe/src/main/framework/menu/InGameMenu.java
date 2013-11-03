@@ -6,6 +6,7 @@ import java.util.Scanner;
 import main.framework.GridCell;
 import main.framework.TicTacToeBoard;
 import main.strategy.examiner.TicTacToeBoardExaminer;
+import main.strategy.impl.MinimaxStrategy;
 import main.strategy.impl.RandomStrategy;
 import main.strategy.impl.TieStrategy;
 import main.strategy.impl.WinStrategy;
@@ -111,8 +112,7 @@ public class InGameMenu implements Menu {
 	}
 	
 	public boolean isGameWinnable() {
-		TicTacToeBoardExaminer examiner = new TicTacToeBoardExaminer(board);
-		ArrayList<GridCell> winningMoves = examiner.getWinningPositions(side);
+		ArrayList<GridCell> winningMoves = TicTacToeBoardExaminer.getWinningPositions(board, side);
 		if (winningMoves.size() > 0) {
 			System.out.println("The game is winnable.  You can move to any of these: ");
 			for (GridCell g : winningMoves) 
@@ -125,7 +125,7 @@ public class InGameMenu implements Menu {
 	}
 	
 	private void getStrategyMove() {
-		 System.out.print("Select player to see strategy - [Win 'W', Tie 'T', Random 'R']: ");
+		 System.out.print("Select player to see strategy - [Win 'W', Tie 'T', Random 'R', Minimax 'M']: ");
          String option = in.next();
          if (option.equalsIgnoreCase("W")) {
         	 System.out.println("Win strategy would choose: " + new WinStrategy(board, side).execute().toLongString());
@@ -133,6 +133,8 @@ public class InGameMenu implements Menu {
         	 System.out.println("Tie strategy would choose: " + new TieStrategy(board, side).execute().toLongString());
          } else if (option.equalsIgnoreCase("R")) {
         	 System.out.println("Random strategy would choose: " + new RandomStrategy(board, side).execute().toLongString());
+         } else if (option.equalsIgnoreCase("M")) {
+        	 System.out.println("Computer strategy would choose: " + new MinimaxStrategy(board, side).execute().toLongString());
          } else {
         	 System.out.println("Invalid strategy.");
          }

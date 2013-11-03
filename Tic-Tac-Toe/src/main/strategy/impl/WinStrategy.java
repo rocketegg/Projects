@@ -11,12 +11,10 @@ public class WinStrategy implements Strategy {
 
 	private TicTacToeBoard board;
 	private String side;
-	private TicTacToeBoardExaminer examiner;
 	
 	public WinStrategy(TicTacToeBoard board, String mySide) {
 		this.board = board;
 		this.side = mySide;
-		this.examiner = new TicTacToeBoardExaminer(board);
 	}
 	
 	/**
@@ -25,14 +23,14 @@ public class WinStrategy implements Strategy {
 	@Override
 	public GridCell execute() {
 		//1. if there is a winning position, take it
-		ArrayList<GridCell> winningCell = examiner.getWinningPositions(side);
+		ArrayList<GridCell> winningCell = TicTacToeBoardExaminer.getWinningPositions(board, side);
 		if (winningCell.size() > 0) {
 			GridCell move = winningCell.get(0);
 			return move;
 		}
 		
 		//2. if there is a losing position, block it
-		ArrayList<GridCell> losingCell = examiner.getLosingPositions(side);
+		ArrayList<GridCell> losingCell = TicTacToeBoardExaminer.getLosingPositions(board, side);
 		if (losingCell.size() > 0) {
 			GridCell move = losingCell.get(0);
 			return move;
@@ -41,7 +39,7 @@ public class WinStrategy implements Strategy {
 		//TODO: Implement checking of forks. This will get you to 100% win or tie rate
 		
 		//3. Otherwise get the optimal position
-		GridCell optimal = examiner.getOptimal(side);
+		GridCell optimal = TicTacToeBoardExaminer.getOptimal(board, side);
 		if (optimal != null)
 			return optimal;
 		

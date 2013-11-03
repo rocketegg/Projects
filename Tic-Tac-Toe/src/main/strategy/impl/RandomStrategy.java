@@ -11,16 +11,16 @@ import main.strategy.examiner.TicTacToeBoardExaminer;
 public class RandomStrategy implements Strategy {
 
 	private String side;
-	private TicTacToeBoardExaminer examiner;
+	private TicTacToeBoard board;
 	
 	public RandomStrategy(TicTacToeBoard board, String mySide) {
 		this.side = mySide;
-		this.examiner = new TicTacToeBoardExaminer(board);
+		this.board = board;
 	}
 	
 	@Override
 	public GridCell execute() {
-		ArrayList<GridCell> openMoves = examiner.getAllOpenMoves(side);
+		ArrayList<GridCell> openMoves = TicTacToeBoardExaminer.getAllOpenMoves(board, side);
 		return getRandom(openMoves);
 	}
 	

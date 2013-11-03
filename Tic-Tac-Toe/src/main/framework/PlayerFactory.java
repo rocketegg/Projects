@@ -2,7 +2,7 @@ package main.framework;
 
 import main.player.Player;
 import main.player.impl.Champ;
-import main.player.impl.Computer;
+import main.player.impl.Minimax;
 import main.player.impl.George;
 import main.player.impl.Person;
 import main.player.impl.Toby;
@@ -23,7 +23,7 @@ public class PlayerFactory {
 		} else if (player.equalsIgnoreCase("george")){
 			return new George(side);
 		} else if (player.equalsIgnoreCase("computer")){
-			return new Computer(side);
+			return new Minimax(side);
 		} else {
 			return new Person(side);
 		}

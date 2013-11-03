@@ -15,6 +15,7 @@ public class GridCell {
 	/*
 	 * Constructors
 	 */
+	
 	public GridCell(int row, int col, boolean isOpen, String value) {
 		this(row, col, isOpen);
 		this.value = value;

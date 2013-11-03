@@ -1,16 +1,13 @@
 package main.framework.test;
 
+import junit.framework.TestCase;
 import main.framework.GridCell;
 import main.framework.TicTacToeBoard;
 import main.framework.TicTacToeGame;
 import main.player.Player;
-import main.player.impl.Computer;
-import main.strategy.Strategy;
-import main.strategy.StrategyFactory;
+import main.player.impl.Minimax;
 
 import org.junit.Before;
-
-import junit.framework.TestCase;
 
 public class MinimaxStrategyTest extends TestCase {
 
@@ -44,10 +41,10 @@ public class MinimaxStrategyTest extends TestCase {
 		System.out.println("MINIMAX TEST ==========");
 		//System.out.println("Assuming O's Turn:");
 		//StrategyFactory sf = new StrategyFactory();
-		Player computer1 = new Computer("O");
+		Player computer1 = new Minimax("O");
 		//GridCell move = computer1.chooseMove(board);
 		//System.out.println(move.toLongString());
-		Player computer2 = new Computer("X");
+		Player computer2 = new Minimax("X");
 		TicTacToeGame newGame = new TicTacToeGame(board, computer1, computer2);
 		newGame.playEntireGame();
 	}

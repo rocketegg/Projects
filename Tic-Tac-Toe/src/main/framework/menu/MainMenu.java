@@ -53,6 +53,10 @@ public class MainMenu implements Menu{
             	int player1wins = 0;
             	int player2wins = 0;
             	int ties = 0;
+            	long startTime   = System.currentTimeMillis();
+            	//without pruning - 13 seconds to run 50 games
+            	//with basic pruning - 
+            	//with alpha-beta pruning - 
             	for (int x = 1; x < numGames+1; x++) {
             		System.out.println("Game " + x + ": ");
             		TicTacToeGame g = (x % 2 == 0) ? new TicTacToeGame(player1, player2) : new TicTacToeGame(player2, player1);
@@ -75,6 +79,9 @@ public class MainMenu implements Menu{
             	System.out.println("RESULTS:");
                 System.out.println("Player 1 " + player1 + " wins: " + player1wins + "\nPlayer 2 " + player2 +
                 		" wins: " + player2wins + "\nTies: " + ties);
+        		long endTime   = System.currentTimeMillis();
+        		long totalTime = endTime - startTime;
+        		System.out.println("Total time taken: " + totalTime);
                   break;
             case 3:
             	  quit = true;
@@ -98,7 +105,7 @@ public class MainMenu implements Menu{
 	}
 	
 	private Player getPlayerFromMenu(String side) {
-		 System.out.print("Select " + side + " player - [Champ = 'C', George = 'G', Toby = 'T', Computer = 'B', Manual = 'M']: ");
+		 System.out.print("Select " + side + " player - [Champ = 'C', George = 'G', Toby = 'T', Minimax = 'B', Manual = 'M']: ");
          String option = in.next();
          if (option.equalsIgnoreCase("C")) {
          	return playerFactory.getNewPlayer("Champ", side);
