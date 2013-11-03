@@ -15,6 +15,14 @@ def combinations(n, m):
     176
     >>> combinations(20, 20)
     627
+    >>> combinations(5,3)
+    5
+    >>> combinations(2,2)
+    2
+    >>> combinations(40,40)
+    37338
+    >>> combinations(100, 100)
+    190569292
 
     #3+1
     #1+1+1+1
@@ -240,10 +248,10 @@ def make_anonymous_factorial():
 if __name__ == '__main__':
     import doctest
     
-    #doctest.run_docstring_examples(combinations, globals(), True, __name__)
+    doctest.run_docstring_examples(combinations, globals(), True, __name__)
    #doctest.run_docstring_examples(has_seven, globals(), True, __name__)
     #doctest.run_docstring_examples(g, globals(), True, __name__)
     #doctest.run_docstring_examples(g_iter, globals(), True, __name__)
     #doctest.run_docstring_examples(pingpong, globals(), True, __name__)
     #doctest.run_docstring_examples(ten_pairs, globals(), True, __name__)
-    doctest.run_docstring_examples(count_change, globals(), True, __name__)
+    #doctest.run_docstring_examples(count_change, globals(), True, __name__)

@@ -27,11 +27,14 @@ public class MinimaxStrategyTest extends TestCase {
 			[_] [_] [_]
 		 */
 		board.update(new GridCell(0,0,false,"X"));
-		board.update(new GridCell(0,1,false,"X"));
-		board.update(new GridCell(0,2,false,"O"));
-		board.update(new GridCell(1,0,false,"O"));
-		board.update(new GridCell(1,1,false,"X"));
-		board.update(new GridCell(1,2,false,"O"));
+		//board.update(new GridCell(0,1,false,"X"));
+		//board.update(new GridCell(0,2,false,"O"));
+		//board.update(new GridCell(1,1,false,"O"));
+		//board.update(new GridCell(1,1,false,"X"));
+		//board.update(new GridCell(1,2,false,"O"));
+		//board.update(new GridCell(2,0,false,"X"));
+		//board.update(new GridCell(2,1,false,"_"));
+		//board.update(new GridCell(2,2,false,"X"));
 
 		System.out.println("Setting up board.");
 		board.print();
@@ -42,6 +45,8 @@ public class MinimaxStrategyTest extends TestCase {
 		//System.out.println("Assuming O's Turn:");
 		//StrategyFactory sf = new StrategyFactory();
 		Player computer1 = new Computer("O");
+		//GridCell move = computer1.chooseMove(board);
+		//System.out.println(move.toLongString());
 		Player computer2 = new Computer("X");
 		TicTacToeGame newGame = new TicTacToeGame(board, computer1, computer2);
 		newGame.playEntireGame();

@@ -20,10 +20,23 @@ public class MinimaxStrategy implements Strategy {
 	
 	@Override
 	public GridCell execute() {
-		// TODO Auto-generated method stub
-		GridCell bestMove = chooseMinimaxMove(board, side).getMove();
-		System.out.println("Executing minimax on side: " + side + " Move: " + bestMove.toLongString());
-		return bestMove;
+		//1. if there is a winning position, take it
+		/*ArrayList<GridCell> winningCell = examiner.getWinningPositions(side);
+		if (winningCell.size() > 0) {
+			GridCell move = winningCell.get(0);
+			return move;
+		}
+		
+		//2. if there is a losing position, block it
+		ArrayList<GridCell> losingCell = examiner.getLosingPositions(side);
+		if (losingCell.size() > 0) {
+			GridCell move = losingCell.get(0);
+			return move;
+		}*/
+		
+		BestMove bestMove = chooseMinimaxMove(board, side, 0);
+		System.out.println("Executing minimax on side: " + side + " Move: " + bestMove.getMove().toLongString() + " score: " + bestMove.getScore());
+		return bestMove.getMove();
 	}
 	
 	/**
@@ -43,13 +56,13 @@ public class MinimaxStrategy implements Strategy {
 	 * @param side
 	 * @return
 	 */
-	private BestMove chooseMinimaxMove(TicTacToeBoard board, String side) {
+	private BestMove chooseMinimaxMove(TicTacToeBoard board, String side, int depth) {
 		int bestScore;
 		GridCell bestMove = null;
 		String otherSide = side.equals("X") ? "O" : "X";
 		//System.out.println("It's " + side + " turn");
-		if ((bestScore = TicTacToeBoardExaminer.getScore(board, side)) != 10) {
-			//System.out.println("Grid is scorable SCORE: " + bestScore);
+		if ((bestScore = TicTacToeBoardExaminer.getScore(board, side, depth)) != 100) {
+			//System.out.println("\tSCORABLE -> SCORE: " + bestScore);
 			//board.print();
 			return new BestMove(null, bestScore);
 		}
@@ -57,30 +70,45 @@ public class MinimaxStrategy implements Strategy {
 		//System.out.println("Board is not scorable yet.");
 		//board.print();
 		ArrayList<GridCell> possibleMoves = new TicTacToeBoardExaminer(board).getAllOpenMoves(side);
-
-		if (this.side.equals("X"))	{ //Player's turn
-			bestScore = -2;
+		
+		if (side.equals("X"))	{ //Player's turn
+			bestScore = -11;
 		} else {	//Opponent's turn
-			bestScore = 2;
+			bestScore = 11;
 		}
 		//System.out.println("best score:" + bestScore);
-		
+		BestMove b = null;
 		for (GridCell move : possibleMoves) {
-			//System.out.println("TRYING MOVE: " + move.toLongString());
+			if (depth == 0) {
+				System.out.println("TRYING MOVE: " + move.toLongString());
+			}
+			//
 			board.update(move);
-			GridCell undoMove = new GridCell(move.getRow(), move.getCol(), true, "_");
-			BestMove b = chooseMinimaxMove(board, otherSide);
+			GridCell undoMove = new GridCell(move.getRow(), move.getCol(), true, " ");
+			if (depth == 0) {
+				board.print();
+			}
+			b = chooseMinimaxMove(board, otherSide, depth+1);
 			board.update(undoMove);
-			if (this.side.equals("X")) {	//player turn
+			if (side.equals("X")) {	//player turn
+				//System.out.println("Finding max: " + b.getScore() + " vs " + bestScore);
 				if (b.getScore() > bestScore) {
+					//System.out.println("setting new max score: " + b.getScore());
 					bestScore = b.getScore();
 					bestMove = move;
 				}
-			} else {	//opponent turn
+			} else if (side.equals("O")){	//opponent turn
+				//System.out.println("Finding min: " + b.getScore() + " vs " + bestScore);
 				if (b.getScore() < bestScore) {
+					//System.out.println("setting new min score: " + b.getScore());
 					bestScore = b.getScore();
 					bestMove = move;
 				}
+			}
+			
+			if (depth == 0) {
+				System.out.println("\tmove: " + move.toLongString());
+				System.out.println("\tmove score: " + b.getScore());
 			}
 		}
 		
@@ -100,13 +128,18 @@ public class MinimaxStrategy implements Strategy {
 			this.move = move;
 			this.score = score;
 		}
-		
+
 		public GridCell getMove() {
 			return move;
 		}
 		
 		public int getScore() {
 			return score;
+		}
+		
+		@Override
+		public String toString() {
+			return move.toLongString() + " score: " + score;
 		}
 	}
 

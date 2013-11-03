@@ -71,6 +71,7 @@ public class TicTacToeGame {
 	 */
 	private void updateGrid(GridCell currentMove) {
 		board.update(currentMove);
+		//board.print();
 	}
 	
 	/**

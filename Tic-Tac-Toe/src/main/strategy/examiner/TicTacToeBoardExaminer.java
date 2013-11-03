@@ -7,10 +7,10 @@ import main.framework.TicTacToeBoard;
 
 public class TicTacToeBoardExaminer {
 
-	private static final int PLAYER_WIN = 1;
-	private static final int OPPONENT_WIN = -1;
+	private static final int PLAYER_WIN = 10;
+	private static final int OPPONENT_WIN = -10;
 	private static final int TIE = 0;
-	private static final int NO_WINNER_YET = 10;
+	private static final int NO_WINNER_YET = 100;
 	
 	private TicTacToeBoard board;
 	
@@ -21,23 +21,28 @@ public class TicTacToeBoardExaminer {
 	/**
 	 * Returns a score (if possible) based on a board configuration and 
 	 * if you are the side
+	 * Depth n - means that 10 is the max score - if the game is over on the first move
+	 *   otherwise, if there is a winning board, subtract the depth because it potentially
+	 *   opens up to a loss
 	 * Scores:
-	 * 		1: side has won
-	 * 	   -1: other side has won
+	 * 		10 - n: side has won, n is depth
+	 * 	   -10 + n: other side has won, where n is depth
 	 *      0: is tie
+	 *      100: No winner yet
 	 *  
 	 * @param board
 	 * @param side
 	 * @return
 	 */
-	public static int getScore(TicTacToeBoard board, String side) {
-		String otherSide = side.equals("X") ? "O" : "X";
+	public static int getScore(TicTacToeBoard board, String side, int depth) {
 		if (sideHasWon(board, "X"))
-			return PLAYER_WIN;
+			return PLAYER_WIN - depth;
 		else if (sideHasWon(board, "O"))
-			return OPPONENT_WIN;
-		else if (board.getAllOpenCells().size() == 0)
-			return TIE;
+			return OPPONENT_WIN + depth;
+		else if (board.getAllOpenCells().size() == 0 && side.equals("X"))
+			return TIE;// - depth;
+		else if (board.getAllOpenCells().size() == 0 && side.equals("O"))
+			return TIE;// + depth;
 		else
 			return NO_WINNER_YET;
 	}
